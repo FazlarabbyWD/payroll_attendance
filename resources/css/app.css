@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+
+/* @import '/resources/assets/vendor/fonts/iconify-icons.css'; */
+@import '../assets/vendor/fonts/iconify-icons.css';
+@import '../assets/vendor/libs/node-waves/node-waves.css';
+@import '../assets/vendor/css/core.css';
+@import '../assets/css/demo.css';
+@import '../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css';
+@import '../assets/vendor/css/pages/page-auth.css';
+@import '../assets/vendor/libs/apex-charts/apex-charts.css';
+
+
+
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+

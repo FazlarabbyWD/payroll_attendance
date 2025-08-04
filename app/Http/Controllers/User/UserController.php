@@ -1,93 +1,170 @@
 <?php
 namespace App\Http\Controllers\User;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\UserStoreRequest;
+use App\Http\Requests\UserUpdateRequest;
 use App\Models\User;
-use App\Services\UserServiceInterface;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use App\Services\UserServiceInterface;
+use App\Exceptions\UserUpdateException;
+use App\Http\Requests\UserStoreRequest;
+use App\Exceptions\UserDeletionException;
+use App\Exceptions\UserNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
     protected $userService;
-      protected $userCrudLog;
+    protected $userCrudLog;
+
     public function __construct(UserServiceInterface $userService)
     {
         $this->userService = $userService;
-           $this->userCrudLog = Log::channel('userStoreLog');
-    }
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        $users = User::all(); // Fetch all users from the database
-
-        return view('users.index', compact('users')); // Pass the users to the view
+        $this->userCrudLog = Log::channel('userStoreLog');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-
-  public function store(UserStoreRequest $request): JsonResponse
+    public function store(UserStoreRequest $request): JsonResponse
     {
         $username = $request->input('username');
 
-        $this->userCrudLog->info("Received user creation request: {$username}", ['username' => $username]);
+        $this->userCrudLog->info('Received user creation request', ['username' => $username]);
 
         try {
             $user = $this->userService->createUser($request);
-            $this->userCrudLog->info("User creation request processed successfully: {$username}", ['user_id' => $user->id, 'username' => $username]);
 
-            return response()->json(['message' => 'User created successfully', 'user' => $user], Response::HTTP_CREATED);
+            $this->userCrudLog->info('User created successfully', [
+                'username' => $user->username,
+                'user_id'  => $user->id,
+            ]);
+
+            return response()->json([
+                'message' => 'User created successfully',
+                'user'    => $user,
+            ], Response::HTTP_CREATED);
+
         } catch (\Exception $e) {
+            $this->userCrudLog->error('Failed to create user', [
+                'username'      => $username,
+                'error_message' => $e->getMessage(),
+                'trace'         => $e->getTraceAsString(),
+            ]);
 
-            $this->userCrudLog->error("Failed to create user {$username} via controller: " . $e->getMessage(), ['error_message' => $e->getMessage(), 'username' => $username, 'trace' => $e->getTraceAsString()]);
-
-            return response()->json(['message' => 'Failed to create user', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Failed to create user',
+                'error'   => $e->getMessage(),
+            ], 500);
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function index()
     {
-        //
+        $users = User::all();
+
+        return view('users.index', compact('users'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+
+
     public function edit(string $id)
     {
-        //
+        try {
+            $user = $this->userService->findUser($id);
+
+            return response()->json([
+                'message' => 'User retrieved successfully',
+                'user' => $user,
+            ], 200);
+
+        } catch (UserNotFoundException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
+
+        } catch (\Exception $e) {
+            $this->userCrudLog->error("Failed to retrieve user for editing", [
+                'user_id' => $id,
+                'error_message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to retrieve user for editing',
+                'error' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+
+       public function update(UserUpdateRequest $request, string $id)
     {
-        //
+
+        dd($request->all());
+
+        $id = $request->input('user_id');
+
+
+
+        try {
+            $user = $this->userService->updateUser($request, $id);
+
+            return redirect()->route('users.index')->with('success', 'User updated successfully!');
+
+        } catch (UserNotFoundException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
+
+        } catch (UserUpdateException $e) {
+            return response()->json([
+                'message' => 'Failed to update user',
+                'error' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        } catch (\Exception $e) {
+            $this->userCrudLog->error("Failed to update user", [
+                'user_id' => $id,
+                'error_message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to update user',
+                'error' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    public function destroy(string $id)
+    {
+        try {
+            $this->userService->deleteUser($id);
+
+            return redirect()->route('users.index')->with('success', 'User deleted successfully!');
+
+        } catch (UserNotFoundException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Response::HTTP_NOT_FOUND);
+
+        } catch (UserDeletionException $e) {
+            return response()->json([
+                'message' => 'Failed to delete user',
+                'error' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        } catch (\Exception $e) {
+            $this->userCrudLog->error("Failed to delete user", [
+                'user_id' => $id,
+                'error_message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to delete user',
+                'error' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function show(string $id)
     {
         //
     }

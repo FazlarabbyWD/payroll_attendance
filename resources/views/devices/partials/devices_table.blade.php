@@ -7,32 +7,24 @@
                     <thead>
                         <tr>
                             <th>Sl No.</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Phone No.</th>
-                            <th>Photo</th>
+                            <th>Device Name</th>
+                            <th>IP Address</th>
+                            <th>Port</th>
+                            <th>Location</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($users as $key => $user)
+                        @foreach ($devices as $key => $device)
                         <tr>
                             <td>{{ $key + 1 }}</td>
-                            <td>{{ $user->username }}</td>
-                            <td>{{ $user->email }}</td>
-                            <td>{{ $user->phone }}</td>
+                            <td>{{ $device->device_name }}</td>
+                            <td>{{ $device->ip_address }}</td>
+                            <td>{{ $device->port }}</td>
+                            <td>{{ $device->location }}</td>
                             <td>
-                                @if ($user->profile_photo)
-                                <img src="{{ asset('public/storage/' . $user->profile_photo) }}" alt="Profile Photo"
-                                    width="30" height="30">
-                                @else
-                                <img src="{{ asset('/resources/assets/img/avatars/1.png') }}"
-                                    alt="Default Profile Photo" width="30" height="30">
-                                @endif
-                            </td>
-                            <td>
-                                @if($user->status == '1')
+                                @if($device->status == '1')
                                 <span class="badge bg-label-success">Active</span>
                                 @else
                                 <span class="badge bg-label-danger">Inactive</span>
@@ -46,20 +38,10 @@
                                         <i class="icon-base ri ri-more-2-line icon-22px"></i>
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-end m-0">
-                                        <li><a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal"
-                                                data-bs-target="#userDetailsModal" data-id="{{ $user->id }}"
-                                                data-username="{{ $user->username }}" data-email="{{ $user->email }}"
-                                                data-phone="{{ $user->phone }}"
-                                                data-profile_photo="{{ $user->profile_photo ? asset('public/storage/' . $user->profile_photo) : asset('/resources/assets/img/avatars/1.png') }}"
-                                                data-status="{{ $user->status }}"
-                                                data-created_at="{{ $user->created_at }}"
-                                                data-updated_at="{{ $user->updated_at }}"
-                                                data-created_by="{{ $user->created_by }}"
-                                                data-updated_by="{{ $user->updated_by }}">
-                                                Details</a></li>
+
                                         <div class="dropdown-divider"></div>
                                         <li>
-                                            <form action="{{ route('users.destroy', $user->id) }}" method="POST"
+                                            <form action="{{ route('devices.destroy', $device->id) }}" method="POST"
                                                 onsubmit="return confirm('Are you sure?')">
                                                 @csrf
                                                 @method('DELETE')
@@ -68,7 +50,7 @@
                                         </li>
                                     </ul>
                                 </div>
-                                <a href="{{ route('users.edit', $user->id) }}"
+                                <a href="{{ route('devices.edit', $device->id) }}"
                                     class="btn btn-sm btn-text-secondary rounded-pill btn-icon item-edit ms-2">
                                     <i class="icon-base ri ri-edit-box-line icon-22px"></i>
                                 </a>

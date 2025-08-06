@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Device\DeviceManageController;
 
 Route::get('/', [AuthenticationController::class, 'loginForm'])->name('login');
 Route::post('/login', [AuthenticationController::class, 'loginSubmit'])->name('login.submit');
@@ -14,6 +15,7 @@ Route::group(['middleware' => ['auth']], function () {
 Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
 
 Route::resource('users', UserController::class);
+Route::resource('devices', DeviceManageController::class);
 
 
 });

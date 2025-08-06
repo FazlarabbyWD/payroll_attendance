@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('password');
             $table->string('profile_photo')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->enum('status', ['1', '0'])->default('1');
             $table->timestamp('email_verified_at')->nullable();
             $table->boolean('force_password_change')->default(false);
             $table->rememberToken();

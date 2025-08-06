@@ -55,7 +55,7 @@
 
         <!-- Apps & Pages -->
         <li class="menu-header mt-7">
-            <span class="menu-header-text">Auth &amp; Account</span>
+            <span class="menu-header-text">Acount &amp; Devices</span>
         </li>
         <!-- Pages -->
         <li class="menu-item {{ request()->is('users*') ? 'open' : '' }}">
@@ -67,6 +67,21 @@
                 <li class="menu-item {{ request()->routeIs('users.index') ? 'active' : '' }}">
                     <a href="{{ route('users.index') }}" class="menu-link">
                         <div data-i18n="Account">User List</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+
+           <li class="menu-item {{ request()->is('devices*') ? 'open' : '' }}">
+            <a href="#" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ri ri-tv-2-line"></i>
+                <div data-i18n="Device Settings">Device Management</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('devices.index') ? 'active' : '' }}">
+                    <a href="{{ route('devices.index') }}" class="menu-link">
+                        <div data-i18n="Device">Device List</div>
                     </a>
                 </li>
             </ul>

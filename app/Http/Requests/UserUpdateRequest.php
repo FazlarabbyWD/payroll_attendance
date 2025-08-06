@@ -25,17 +25,23 @@ class UserUpdateRequest extends FormRequest
 {
 
 
-      $userId = $this->route('user')->id ?? $this->route('id');
+     $userId = $this->route('user');
     return [
        'username' => [
             'required',
             'min:4',
+              Rule::unique('users')->ignore($userId),
         ],
-        'email' => [
+       'email' => [
             'required',
             'email',
+            Rule::unique('users')->ignore($userId),
         ],
-        'phone'         => ['required', 'regex:/^01[3-9]\d{8}$/'],
+     'phone' => [
+            'required',
+            'regex:/^01[3-9]\d{8}$/',
+            Rule::unique('users')->ignore($userId),
+        ],
         'profile_photo' => 'nullable|file|mimes:jpg,bmp,png|max:1024|dimensions:min_width=100,min_height=200',
     ];
 }

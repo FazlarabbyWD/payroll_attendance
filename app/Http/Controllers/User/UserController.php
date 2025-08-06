@@ -1,15 +1,16 @@
 <?php
 namespace App\Http\Controllers\User;
 
-use App\Http\Requests\UserUpdateRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
 use App\Services\UserServiceInterface;
 use App\Exceptions\UserUpdateException;
 use App\Http\Requests\UserStoreRequest;
+use App\Http\Requests\UserUpdateRequest;
 use App\Exceptions\UserDeletionException;
 use App\Exceptions\UserNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,38 +26,34 @@ class UserController extends Controller
         $this->userCrudLog = Log::channel('userStoreLog');
     }
 
-    public function store(UserStoreRequest $request): JsonResponse
-    {
-        $username = $request->input('username');
+   public function store(UserStoreRequest $request): RedirectResponse
+{
+    $username = $request->input('username');
 
-        $this->userCrudLog->info('Received user creation request', ['username' => $username]);
+    $this->userCrudLog->info('Received user creation request', ['username' => $username]);
 
-        try {
-            $user = $this->userService->createUser($request);
+    try {
+        $user = $this->userService->createUser($request);
 
-            $this->userCrudLog->info('User created successfully', [
-                'username' => $user->username,
-                'user_id'  => $user->id,
-            ]);
+        $this->userCrudLog->info('User created successfully', [
+            'username' => $user->username,
+            'user_id'  => $user->id,
+        ]);
 
-            return response()->json([
-                'message' => 'User created successfully',
-                'user'    => $user,
-            ], Response::HTTP_CREATED);
+        return redirect()->route('users.index')->with('success', 'User created successfully!');
 
-        } catch (\Exception $e) {
-            $this->userCrudLog->error('Failed to create user', [
-                'username'      => $username,
-                'error_message' => $e->getMessage(),
-                'trace'         => $e->getTraceAsString(),
-            ]);
+    } catch (\Exception $e) {
+        $this->userCrudLog->error('Failed to create user', [
+            'username'      => $username,
+            'error_message' => $e->getMessage(),
+            'trace'         => $e->getTraceAsString(),
+        ]);
 
-            return response()->json([
-                'message' => 'Failed to create user',
-                'error'   => $e->getMessage(),
-            ], 500);
-        }
+        return redirect()->back()->withInput()->withErrors([
+            'error' => 'Failed to create user: ' . $e->getMessage(),
+        ]);
     }
+}
 
     public function index()
     {
@@ -67,105 +64,88 @@ class UserController extends Controller
 
 
 
-    public function edit(string $id)
-    {
-        try {
-            $user = $this->userService->findUser($id);
+public function edit(string $id)
+{
+    try {
+        $user = $this->userService->findUser($id);
 
-            return response()->json([
-                'message' => 'User retrieved successfully',
-                'user' => $user,
-            ], 200);
+        return view('users.edit', compact('user'));
 
-        } catch (UserNotFoundException $e) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], Response::HTTP_NOT_FOUND);
+    } catch (UserNotFoundException $e) {
+        return redirect()->route('users.index')->withErrors([
+            'error' => $e->getMessage(),
+        ]);
 
-        } catch (\Exception $e) {
-            $this->userCrudLog->error("Failed to retrieve user for editing", [
-                'user_id' => $id,
-                'error_message' => $e->getMessage(),
-            ]);
+    } catch (\Exception $e) {
+        $this->userCrudLog->error("Failed to retrieve user for editing", [
+            'user_id' => $id,
+            'error_message' => $e->getMessage(),
+        ]);
 
-            return response()->json([
-                'message' => 'Failed to retrieve user for editing',
-                'error' => $e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
+        return redirect()->route('users.index')->withErrors([
+            'error' => 'Failed to retrieve user for editing: ' . $e->getMessage(),
+        ]);
     }
+}
 
 
-       public function update(UserUpdateRequest $request, string $id)
-    {
+ public function update(UserUpdateRequest $request, string $id)
+{
+    try {
+        $user = $this->userService->updateUser($request, $id);
 
-        dd($request->all());
+        return redirect()->route('users.index')->with('success', 'User updated successfully!');
 
-        $id = $request->input('user_id');
+    } catch (UserNotFoundException $e) {
+        return redirect()->route('users.index')->withErrors([
+            'error' => $e->getMessage(),
+        ]);
 
+    } catch (UserUpdateException $e) {
+        return redirect()->back()->withInput()->withErrors([
+            'error' => 'Failed to update user: ' . $e->getMessage(),
+        ]);
 
+    } catch (\Exception $e) {
+        $this->userCrudLog->error("Failed to update user", [
+            'user_id' => $id,
+            'error_message' => $e->getMessage(),
+        ]);
 
-        try {
-            $user = $this->userService->updateUser($request, $id);
-
-            return redirect()->route('users.index')->with('success', 'User updated successfully!');
-
-        } catch (UserNotFoundException $e) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], Response::HTTP_NOT_FOUND);
-
-        } catch (UserUpdateException $e) {
-            return response()->json([
-                'message' => 'Failed to update user',
-                'error' => $e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-        } catch (\Exception $e) {
-            $this->userCrudLog->error("Failed to update user", [
-                'user_id' => $id,
-                'error_message' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'message' => 'Failed to update user',
-                'error' => $e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
+        return redirect()->back()->withInput()->withErrors([
+            'error' => 'Unexpected error occurred while updating user.',
+        ]);
     }
-    public function destroy(string $id)
-    {
-        try {
-            $this->userService->deleteUser($id);
+}
 
-            return redirect()->route('users.index')->with('success', 'User deleted successfully!');
 
-        } catch (UserNotFoundException $e) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], Response::HTTP_NOT_FOUND);
+public function destroy(string $id)
+{
+    try {
+        $this->userService->deleteUser($id);
 
-        } catch (UserDeletionException $e) {
-            return response()->json([
-                'message' => 'Failed to delete user',
-                'error' => $e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        return redirect()->route('users.index')->with('success', 'User deleted successfully!');
 
-        } catch (\Exception $e) {
-            $this->userCrudLog->error("Failed to delete user", [
-                'user_id' => $id,
-                'error_message' => $e->getMessage(),
-            ]);
+    } catch (UserNotFoundException $e) {
+        return redirect()->route('users.index')->withErrors([
+            'error' => $e->getMessage(),
+        ]);
 
-            return response()->json([
-                'message' => 'Failed to delete user',
-                'error' => $e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
+    } catch (UserDeletionException $e) {
+        return redirect()->route('users.index')->withErrors([
+            'error' => 'Failed to delete user: ' . $e->getMessage(),
+        ]);
+
+    } catch (\Exception $e) {
+        $this->userCrudLog->error("Failed to delete user", [
+            'user_id' => $id,
+            'error_message' => $e->getMessage(),
+        ]);
+
+        return redirect()->route('users.index')->withErrors([
+            'error' => 'Unexpected error occurred while deleting user.',
+        ]);
     }
+}
 
-    public function show(string $id)
-    {
-        //
-    }
 }

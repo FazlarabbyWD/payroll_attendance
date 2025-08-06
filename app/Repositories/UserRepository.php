@@ -26,6 +26,7 @@ class UserRepository implements UserRepositoryInterface
             $user->email    = $userData['email'];
             $user->phone    = $userData['phone'];
             $user->password = Hash::make($userData['password']);
+             $user->created_by   = auth()->user()->id;
 
 
             if ($profilePhoto) {
@@ -59,6 +60,7 @@ class UserRepository implements UserRepositoryInterface
             $user->username = $userData['username'];
             $user->email = $userData['email'];
             $user->phone = $userData['phone'];
+              $user->updated_by   = auth()->user()->id;
 
             if (isset($userData['password']) && $userData['password']) {
                 $user->password = Hash::make($userData['password']);
@@ -87,19 +89,21 @@ class UserRepository implements UserRepositoryInterface
     }
 
 
- public function delete(User $user): void
-    {
-        DB::transaction(function () use ($user) {
+public function delete(User $user): void
+{
+    DB::transaction(function () use ($user) {
 
-            if ($user->profile_photo) {
-                Storage::disk('public')->delete($user->profile_photo);
-            }
+        if ($user->profile_photo) {
+            Storage::disk('public')->delete($user->profile_photo);
+        }
+        $user->deleted_by = auth()->user()->id;
 
-            $user->delete();
+        $user->delete();
 
-            $this->userCrudLog->info('User record deleted from DB', [
-                'user_id' => $user->id,
-            ]);
-        });
-    }
+        $this->userCrudLog->info('User record deleted from DB', [
+            'user_id' => $user->id,
+        ]);
+    });
+}
+
 }

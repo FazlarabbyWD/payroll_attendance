@@ -9,10 +9,11 @@ use App\Models\Department;
 interface DepartmentServiceInterface
 {
      public function getAllDepartments();
-    public function createDepartments(DepartmentStoreRequest $request): Department;
-    public function findDepartments(string $id): ?Department;
-    public function updateDepartments(DepartmentUpdateRequest $request, string $id): Department;
+    public function createDepartment(DepartmentStoreRequest $request): Department;
+    public function findDepartment(string $id): ?Department;
+    public function updateDepartment(DepartmentUpdateRequest $request, string $id): Department;
 
-    public function deleteDepartments(string $id): void;
+    public function deleteDepartment(string $id): void;
+
 }
 

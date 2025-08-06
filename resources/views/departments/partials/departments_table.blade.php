@@ -40,7 +40,7 @@
                                         </li>
                                     </ul>
                                 </div>
-                                <a href="{{ route('department.edit', $department->id) }}"
+                                <a href="{{ route('departments.edit', $department->id) }}"
                                     class="btn btn-sm btn-text-secondary rounded-pill btn-icon item-edit ms-2">
                                     <i class="icon-base ri ri-edit-box-line icon-22px"></i>
                                 </a>

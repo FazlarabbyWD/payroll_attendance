@@ -73,7 +73,7 @@
         </li>
 
 
-           <li class="menu-item {{ request()->is('devices*') ? 'open' : '' }}">
+        <li class="menu-item {{ request()->is('devices*') ? 'open' : '' }}">
             <a href="#" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ri ri-tv-2-line"></i>
                 <div data-i18n="Device Settings">Device Management</div>
@@ -82,6 +82,26 @@
                 <li class="menu-item {{ request()->routeIs('devices.index') ? 'active' : '' }}">
                     <a href="{{ route('devices.index') }}" class="menu-link">
                         <div data-i18n="Device">Device List</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="menu-item {{ request()->is('departments*') ? 'open' : '' }}">
+            <a href="#" class="menu-link menu-toggle">
+             <i class="menu-icon icon-base ri ri-box-3-line"></i>
+                <div data-i18n="Departments Settings">Dept. & Desgn.</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('departments.index') ? 'active' : '' }}">
+                    <a href="{{ route('departments.index') }}" class="menu-link">
+                        <div data-i18n="Department">Department List</div>
+                    </a>
+                </li>
+
+                <li class="menu-item {{ request()->routeIs('designations.index') ? 'active' : '' }}">
+                    <a href="{{ route('designations.index') }}" class="menu-link">
+                        <div data-i18n="Designation">Designation List</div>
                     </a>
                 </li>
             </ul>

@@ -74,5 +74,67 @@
 </script>
 @endif
 
+<script>
+    // Get references to the input and select elements
+        const nameSearchInput = document.getElementById('nameSearchInput');
+        const locationSearchInput = document.getElementById('locationSearchInput');
+        const ipSearchInput = document.getElementById('ipSearchInput');
+        const statusFilter = document.getElementById('statusFilter');
+
+        // Get all the table rows
+        const tableRows = Array.from(document.querySelectorAll('table tbody tr'));
+
+        // Function to filter the table rows
+        function filterTable() {
+            const nameSearchTerm = nameSearchInput.value.toLowerCase();
+            const locationSearchTerm = locationSearchInput.value.toLowerCase();
+            const ipSearchTerm = ipSearchInput.value.toLowerCase();
+            const statusValue = statusFilter.value;
+
+            tableRows.forEach(row => {
+                // Get the data from the row
+                const device_name = row.cells[1].textContent.toLowerCase();
+                const ip_address = row.cells[2].textContent.toLowerCase();
+                const location = row.cells[4].textContent.toLowerCase();
+
+                // Get status value 1 or 0
+                const status = (row.cells[5].textContent.toLowerCase() === 'active') ? '1' : '0';
+
+                // Check if the row matches the search term and status filter
+                const isDeviceNameMatch = device_name.includes(nameSearchTerm);
+                const isLocationMatch = location.includes(locationSearchTerm);
+                const isIpMatch = ip_address.includes(ipSearchTerm);
+                const isStatusMatch = statusValue === "" || status === statusValue;
+
+                // Show or hide the row based on whether it matches the search term and status filter
+                if (isDeviceNameMatch && isLocationMatch && isIpMatch && isStatusMatch) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+        // Function to reset the filter
+        function resetFilter() {
+            nameSearchInput.value = "";
+            locationSearchInput.value = "";
+            ipSearchInput.value = "";
+            statusFilter.value = "";
+            filterTable();
+        }
+
+
+        // Attach event listeners to the input and select elements
+         nameSearchInput.addEventListener('input', filterTable);
+        locationSearchInput.addEventListener('input', filterTable);
+        ipSearchInput.addEventListener('input', filterTable);
+        statusFilter.addEventListener('change', filterTable);
+
+           // Get reference to the reset button and attach event listener
+        const resetButton = document.getElementById('resetButton');
+        resetButton.addEventListener('click', resetFilter);
+
+</script>
 
 @endpush

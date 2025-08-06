@@ -129,6 +129,8 @@
             });
         }
 
+
+        
          // Get references to the input and select elements
         const nameSearchInput = document.getElementById('nameSearchInput');
         const emailSearchInput = document.getElementById('emailSearchInput');
@@ -180,7 +182,7 @@
 
 
         // Attach event listeners to the input and select elements
-         nameSearchInput.addEventListener('input', filterTable);
+        nameSearchInput.addEventListener('input', filterTable);
         emailSearchInput.addEventListener('input', filterTable);
         phoneSearchInput.addEventListener('input', filterTable);
         statusFilter.addEventListener('change', filterTable);

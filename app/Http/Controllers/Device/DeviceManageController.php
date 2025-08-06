@@ -1,15 +1,13 @@
 <?php
 namespace App\Http\Controllers\Device;
 
-use App\Http\Requests\DeviceUpdateRequest;
-use App\Models\Device;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
-use App\Services\DeviceServiceInterface;
-use App\Http\Requests\DeviceStoreRequest;
 use App\Exceptions\DeviceNotFoundException;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\DeviceStoreRequest;
+use App\Http\Requests\DeviceUpdateRequest;
+use App\Services\DeviceServiceInterface;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
 
 class DeviceManageController extends Controller
 {
@@ -23,64 +21,62 @@ class DeviceManageController extends Controller
     }
     public function index()
     {
-        $devices = Device::all();
+        $devices = $this->deviceService->getAllDevices();
 
         return view('devices.index', compact('devices'));
     }
+    public function store(DeviceStoreRequest $request): RedirectResponse
+    {
+        $deviceName = $request->input('device_name');
 
-   public function store(DeviceStoreRequest $request): RedirectResponse
-{
-    $deviceName = $request->input('device_name');
+        $this->deviceCrudLog->info('Received Device creation request', ['device_name' => $deviceName]);
 
-    $this->deviceCrudLog->info('Received Device creation request', ['device_name' => $deviceName]);
+        try {
+            $device = $this->deviceService->createDevice($request);
 
-    try {
-        $device = $this->deviceService->createDevice($request);
+            $this->deviceCrudLog->info('Device created successfully', [
+                'device_name' => $device->device_name,
+                'device_id'   => $device->id,
+            ]);
 
-        $this->deviceCrudLog->info('Device created successfully', [
-            'device_name' => $device->device_name,
-            'device_id'   => $device->id,
-        ]);
+            return redirect()->route('devices.index')->with('success', 'Device created successfully!');
+        } catch (\Exception $e) {
+            $this->deviceCrudLog->error('Failed to create device', [
+                'device_name'   => $deviceName,
+                'error_message' => $e->getMessage(),
+                'trace'         => $e->getTraceAsString(),
+            ]);
 
-        return redirect()->route('devices.index')->with('success', 'Device created successfully!');
-    } catch (\Exception $e) {
-        $this->deviceCrudLog->error('Failed to create device', [
-            'device_name'   => $deviceName,
-            'error_message' => $e->getMessage(),
-            'trace'         => $e->getTraceAsString(),
-        ]);
-
-        return redirect()->back()->withInput()->withErrors([
-            'error' => 'Failed to create device: ' . $e->getMessage(),
-        ]);
+            return redirect()->back()->withInput()->withErrors([
+                'error' => 'Failed to create device: ' . $e->getMessage(),
+            ]);
+        }
     }
-}
 
+    public function edit(string $id)
+    {
 
-  public function edit(string $id)
-{
+        try {
+            $device = $this->deviceService->findDevice($id);
 
-    try {
-        $device = $this->deviceService->findDevice($id);
+            return view('devices.edit', compact('device'));
 
-        return view('devices.edit', compact('device'));
+        } catch (DeviceNotFoundException $e) {
+            return redirect()->route('devices.index')->withErrors([
+                'error' => $e->getMessage(),
+            ]);
 
-    } catch (DeviceNotFoundException $e) {
-        return redirect()->route('devices.index')->withErrors([
-            'error' => $e->getMessage(),
-        ]);
+        } catch (\Exception $e) {
+            $this->deviceCrudLog->error("Failed to retrieve device for editing", [
+                'device_id'     => $id,
+                'error_message' => $e->getMessage(),
+            ]);
 
-    } catch (\Exception $e) {
-        $this->deviceCrudLog->error("Failed to retrieve device for editing", [
-            'device_id' => $id,
-            'error_message' => $e->getMessage(),
-        ]);
-
-        return redirect()->route('devices.index')->withErrors([
-            'error' => 'Failed to retrieve device for editing: ' . $e->getMessage(),
-        ]);
+            return redirect()->route('devices.index')->withErrors([
+                'error' => 'Failed to retrieve device for editing: ' . $e->getMessage(),
+            ]);
+        }
     }
-}
 
     public function update(DeviceUpdateRequest $request)
     {
@@ -89,14 +85,14 @@ class DeviceManageController extends Controller
         try {
             $device = $this->deviceService->findDevice($deviceId);
 
-            if (!$device) {
+            if (! $device) {
                 throw new DeviceNotFoundException("Device with ID {$deviceId} not found.");
             }
 
             $updatedDevice = $this->deviceService->updateDevice($request, $deviceId);
 
             $this->deviceCrudLog->info('Device updated successfully', [
-                'device_id' => $updatedDevice->id,
+                'device_id'   => $updatedDevice->id,
                 'device_name' => $updatedDevice->device_name,
             ]);
 
@@ -108,7 +104,7 @@ class DeviceManageController extends Controller
             ]);
         } catch (\Exception $e) {
             $this->deviceCrudLog->error('Failed to update device', [
-                'device_id' => $deviceId,
+                'device_id'     => $deviceId,
                 'error_message' => $e->getMessage(),
             ]);
 
@@ -124,14 +120,14 @@ class DeviceManageController extends Controller
         try {
             $device = $this->deviceService->findDevice($id);
 
-            if (!$device) {
+            if (! $device) {
                 throw new DeviceNotFoundException("Device with ID {$id} not found.");
             }
 
             $this->deviceService->deleteDevice($id);
 
             $this->deviceCrudLog->info('Device deleted successfully', [
-                'device_id' => $id,
+                'device_id'   => $id,
                 'device_name' => $device->device_name,
             ]);
 
@@ -143,7 +139,7 @@ class DeviceManageController extends Controller
             ]);
         } catch (\Exception $e) {
             $this->deviceCrudLog->error('Failed to delete device', [
-                'device_id' => $id,
+                'device_id'     => $id,
                 'error_message' => $e->getMessage(),
             ]);
 
@@ -152,5 +148,5 @@ class DeviceManageController extends Controller
             ]);
         }
     }
- 
+
 }

@@ -14,12 +14,16 @@ class DeviceRepository implements DeviceRepositoryInterface
         $this->DeviceStoreLog = Log::channel('deviceStoreLog');
     }
 
+    public function getAll()
+    {
+        return Device::all();
+    }
+
     public function create(array $deviceData): Device
     {
-        // dd($deviceData); // Debugging line, remove in production
+
         return DB::transaction(function () use ($deviceData) {
 
-            // dd($deviceData); // Debugging line, remove in production
 
             $device              = new Device();
             $device->device_name = $deviceData['device_name'];
@@ -30,7 +34,6 @@ class DeviceRepository implements DeviceRepositoryInterface
             $device->created_by = auth()->user()->id;
 
             $device->save();
-
 
             $this->DeviceStoreLog->info('Device record inserted into DB', [
                 'device_id'   => $device->id,
@@ -47,33 +50,29 @@ class DeviceRepository implements DeviceRepositoryInterface
         return Device::find($id);
     }
 
+    public function update(Device $device, array $deviceData): Device
+    {
+        return DB::transaction(function () use ($device, $deviceData) {
+            $device->device_name = $deviceData['device_name'];
+            $device->location    = $deviceData['location'];
+            $device->ip_address  = $deviceData['ip_address'];
+            $device->port        = $deviceData['port'];
+            $device->status      = $deviceData['status'];
 
+            $device->updated_by = auth()->user()->id;
 
-   public function update(Device $device, array $deviceData): Device
-{
-    return DB::transaction(function () use ($device, $deviceData) {
-        $device->device_name = $deviceData['device_name'];
-        $device->location    = $deviceData['location'];
-        $device->ip_address  = $deviceData['ip_address'];
-        $device->port        = $deviceData['port'];
-        $device->status        = $deviceData['status'];
+            $device->save();
 
-        $device->updated_by = auth()->user()->id;
+            $this->DeviceStoreLog->info('Device record updated in DB', [
+                'device_id'   => $device->id,
+                'device_name' => $device->device_name,
+                'location'    => $device->location,
+                'ip_address'  => $device->ip_address,
+            ]);
 
-        $device->save();
-
-        $this->DeviceStoreLog->info('Device record updated in DB', [
-            'device_id'   => $device->id,
-            'device_name' => $device->device_name,
-            'location'    => $device->location,
-            'ip_address'  => $device->ip_address,
-        ]);
-
-        return $device;
-    });
-}
-
-
+            return $device;
+        });
+    }
 
     public function delete(Device $device): void
     {

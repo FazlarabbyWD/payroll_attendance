@@ -5,6 +5,8 @@ use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Device\DeviceManageController;
+use App\Http\Controllers\DepartmentDesignation\DepartmentManageController;
+use App\Http\Controllers\DepartmentDesignation\DesignationManageController;
 
 Route::get('/', [AuthenticationController::class, 'loginForm'])->name('login');
 Route::post('/login', [AuthenticationController::class, 'loginSubmit'])->name('login.submit');
@@ -16,6 +18,8 @@ Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashb
 
 Route::resource('users', UserController::class);
 Route::resource('devices', DeviceManageController::class);
+Route::resource('departments', DepartmentManageController::class);
+Route::resource('designations', DesignationManageController::class);
 
 
 });

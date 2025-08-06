@@ -25,6 +25,12 @@ class UserService implements UserServiceInterface
         $this->userCrudLog    = Log::channel('userStoreLog');
     }
 
+     public function getAllUsers()
+    {
+        return $this->userRepository->getAll();
+    }
+
+
     public function createUser(UserStoreRequest $request): User
     {
         $username   = $request->input('username');

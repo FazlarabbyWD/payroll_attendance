@@ -18,6 +18,13 @@ class UserRepository implements UserRepositoryInterface
         $this->userCrudLog = Log::channel('userStoreLog');
     }
 
+
+    public function getAll()
+    {
+        return User::all();
+    }
+
+
     public function create(array $userData, ?UploadedFile $profilePhoto = null): User
     {
         return DB::transaction(function () use ($userData, $profilePhoto) {

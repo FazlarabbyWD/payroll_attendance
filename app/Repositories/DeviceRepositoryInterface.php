@@ -5,6 +5,7 @@ use App\Models\Device;
 
 interface DeviceRepositoryInterface
 {
+    public function getAll();
     public function create(array $deviceData): Device;
     public function find(string $id): ?Device;
     public function update(Device $Device, array $DeviceData): Device;

@@ -1,18 +1,18 @@
 <?php
 namespace App\Services;
 
-use App\Models\Device;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Database\QueryException;
-use App\Exceptions\DeviceUpdateException;
-use App\Http\Requests\DeviceStoreRequest;
-use App\Http\Requests\DeviceUpdateRequest;
 use App\Exceptions\DeviceCreationException;
 use App\Exceptions\DeviceDeletionException;
 use App\Exceptions\DeviceNotFoundException;
+use App\Exceptions\DeviceUpdateException;
+use App\Http\Requests\DeviceStoreRequest;
+use App\Http\Requests\DeviceUpdateRequest;
+use App\Models\Device;
 use App\Repositories\DeviceRepositoryInterface;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class DeviceService implements DeviceServiceInterface
 {
@@ -25,65 +25,70 @@ class DeviceService implements DeviceServiceInterface
         $this->deviceCrudLog    = Log::channel('deviceStoreLog');
     }
 
-  public function createDevice(DeviceStoreRequest $request): Device
-{
-    $maxRetries = Config::get('device.max_retries', 3);
-    $retryDelay = Config::get('device.initial_retry_delay_ms', 100);
+    public function getAllDevices()
+    {
+        return $this->deviceRepository->getAll();
+    }
 
-    for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+    public function createDevice(DeviceStoreRequest $request): Device
+    {
+        $maxRetries = Config::get('device.max_retries', 3);
+        $retryDelay = Config::get('device.initial_retry_delay_ms', 100);
 
-        $this->deviceCrudLog->info('Attempting Device creation', [
-            'attempt'  => $attempt,
-            //'device_name' => $device, // Removed this line
-        ]);
+        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
 
-        try {
-            $deviceData     = $request->validated();
-
-            $device = $this->deviceRepository->create($deviceData);
-
-            $this->deviceCrudLog->info('Device created', [
-                'attempt'  => $attempt,
-                'device_id'  => $device->id,
-                'device_name' => $device->device_name,
+            $this->deviceCrudLog->info('Attempting Device creation', [
+                'attempt' => $attempt,
+                //'device_name' => $device, // Removed this line
             ]);
 
-            return $device;
+            try {
+                $deviceData = $request->validated();
 
-        } catch (QueryException $e) {
-            if ($this->isDeadlockOrConnectionException($e)) {
-                $this->deviceCrudLog->warning('Transient DB issue during user creation, retrying...', [
+                $device = $this->deviceRepository->create($deviceData);
+
+                $this->deviceCrudLog->info('Device created', [
+                    'attempt'     => $attempt,
+                    'device_id'   => $device->id,
+                    'device_name' => $device->device_name,
+                ]);
+
+                return $device;
+
+            } catch (QueryException $e) {
+                if ($this->isDeadlockOrConnectionException($e)) {
+                    $this->deviceCrudLog->warning('Transient DB issue during user creation, retrying...', [
+                        'attempt'       => $attempt,
+
+                        'error_message' => $e->getMessage(),
+                    ]);
+                    usleep($retryDelay * 1000);
+                    $retryDelay *= 2;
+                    continue;
+                }
+
+                $this->deviceCrudLog->error('Query exception during user creation', [
                     'attempt'       => $attempt,
 
                     'error_message' => $e->getMessage(),
                 ]);
-                usleep($retryDelay * 1000);
-                $retryDelay *= 2;
-                continue;
+
+                throw $e;
+            } catch (\Exception $e) {
+                $this->deviceCrudLog->error('Unexpected error during user creation', [
+                    'attempt'       => $attempt,
+
+                    'error_message' => $e->getMessage(),
+                ]);
+
+                throw $e;
             }
-
-            $this->deviceCrudLog->error('Query exception during user creation', [
-                'attempt'       => $attempt,
-
-                'error_message' => $e->getMessage(),
-            ]);
-
-            throw $e;
-        } catch (\Exception $e) {
-            $this->deviceCrudLog->error('Unexpected error during user creation', [
-                'attempt'       => $attempt,
-
-                'error_message' => $e->getMessage(),
-            ]);
-
-            throw $e;
         }
+
+        throw new DeviceCreationException("Failed to create Device after {$maxRetries} attempts.");
     }
 
-    throw new DeviceCreationException("Failed to create Device after {$maxRetries} attempts.");
-}
-
-  public function findDevice(string $id): ?Device
+    public function findDevice(string $id): ?Device
     {
         try {
             $device = $this->deviceRepository->find($id);
@@ -96,20 +101,19 @@ class DeviceService implements DeviceServiceInterface
             return $device;
         } catch (\Exception $e) {
             $this->deviceCrudLog->error("Error finding device", [
-                'device_id'       => $id,
+                'device_id'     => $id,
                 'error_message' => $e->getMessage(),
             ]);
             throw $e;
         }
     }
 
-   public function updateDevice(DeviceUpdateRequest $request, string $id): Device
+    public function updateDevice(DeviceUpdateRequest $request, string $id): Device
     {
         try {
             $device = $this->findDevice($id);
 
             $deviceData = $request->validated();
-
 
             $device = $this->deviceRepository->update($device, $deviceData);
 
@@ -123,14 +127,14 @@ class DeviceService implements DeviceServiceInterface
             throw $e;
         } catch (\Exception $e) {
             $this->deviceCrudLog->error("Failed to update Device", [
-                'device_id'       => $id,
+                'device_id'     => $id,
                 'error_message' => $e->getMessage(),
             ]);
             throw new DeviceUpdateException("Failed to update Device: " . $e->getMessage(), 0, $e);
         }
     }
 
-     public function deleteDevice(string $id): void
+    public function deleteDevice(string $id): void
     {
         try {
             $device = $this->findDevice($id);
@@ -143,7 +147,7 @@ class DeviceService implements DeviceServiceInterface
             throw $e;
         } catch (\Exception $e) {
             $this->deviceCrudLog->error("Failed to delete device", [
-                'device_id'       => $id,
+                'device_id'     => $id,
                 'error_message' => $e->getMessage(),
             ]);
             throw new DeviceDeletionException("Failed to delete device: " . $e->getMessage(), 0, $e);

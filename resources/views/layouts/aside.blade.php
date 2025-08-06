@@ -87,9 +87,10 @@
             </ul>
         </li>
 
-        <li class="menu-item {{ request()->is('departments*') ? 'open' : '' }}">
+        <li class="menu-item {{ request()->is('departments*', 'designations*') ? 'open' : '' }}">
+
             <a href="#" class="menu-link menu-toggle">
-             <i class="menu-icon icon-base ri ri-box-3-line"></i>
+                <i class="menu-icon icon-base ri ri-box-3-line"></i>
                 <div data-i18n="Departments Settings">Dept. & Desgn.</div>
             </a>
             <ul class="menu-sub">

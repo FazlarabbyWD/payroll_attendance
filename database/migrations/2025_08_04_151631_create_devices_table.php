@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('device_name');
             $table->string('location')->nullable();
             $table->ipAddress('ip_address')->unique();
-            $table->integer('port')->unique();
+            $table->integer('port');
             $table->enum('status', ['1', '0'])->default('1');
             $table->timestamps();
             $table->softDeletes();

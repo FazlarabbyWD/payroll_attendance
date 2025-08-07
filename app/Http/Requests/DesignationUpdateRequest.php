@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -21,13 +20,15 @@ class DesignationUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => [
+            'name'             => [
                 'required',
                 'string',
                 'max:255',
                 Rule::unique('designations', 'name')->ignore($this->designation),
             ],
-            'description' => 'nullable|string|max:1000',
+            'description'      => 'nullable|string|max:1000',
+            'department_ids'   => 'required|array',
+            'department_ids.*' => 'exists:departments,id',
         ];
     }
 
@@ -37,10 +38,10 @@ class DesignationUpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required'  => 'The designation name is required.',
-            'name.string'    => 'The designation name must be a string.',
-            'name.max'       => 'The designation name must not exceed 255 characters.',
-            'name.unique'    => 'This designation name already exists.',
+            'name.required'      => 'The designation name is required.',
+            'name.string'        => 'The designation name must be a string.',
+            'name.max'           => 'The designation name must not exceed 255 characters.',
+            'name.unique'        => 'This designation name already exists.',
 
             'description.string' => 'The description must be a string.',
             'description.max'    => 'The description must not exceed 1000 characters.',

@@ -1,19 +1,23 @@
 <?php
 namespace App\Providers;
 
-use App\Repositories\DepartmentRepository;
-use App\Repositories\DepartmentRepositoryInterface;
-use App\Repositories\DeviceRepository;
-use App\Repositories\DeviceRepositoryInterface;
-use App\Repositories\UserRepository;
-use App\Repositories\UserRepositoryInterface;
-use App\Services\DepartmentService;
-use App\Services\DepartmentServiceInterface;
-use App\Services\DeviceService;
-use App\Services\DeviceServiceInterface;
 use App\Services\UserService;
+use App\Services\DeviceService;
+use App\Services\DepartmentService;
+use App\Repositories\UserRepository;
+use App\Services\DesignationService;
+use App\Repositories\DeviceRepository;
 use App\Services\UserServiceInterface;
 use Illuminate\Support\ServiceProvider;
+use App\Services\DeviceServiceInterface;
+use App\Repositories\DepartmentRepository;
+use App\Repositories\DesignationRepository;
+use App\Services\DepartmentServiceInterface;
+use App\Repositories\UserRepositoryInterface;
+use App\Services\DesignationServiceInterface;
+use App\Repositories\DeviceRepositoryInterface;
+use App\Repositories\DepartmentRepositoryInterface;
+use App\Repositories\DesignationRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,6 +34,9 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(DepartmentRepositoryInterface::class, DepartmentRepository::class);
         $this->app->bind(DepartmentServiceInterface::class, DepartmentService::class);
+
+        $this->app->bind(DesignationRepositoryInterface::class, DesignationRepository::class);
+        $this->app->bind(DesignationServiceInterface::class, DesignationService::class);
     }
 
     /**

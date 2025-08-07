@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('department_designation', function (Blueprint $table) {
-        $table->id();
-            $table->foreignId('department_id')->constrained()->onDelete('cascade');
-            $table->foreignId('designation_id')->constrained()->onDelete('cascade');
+        Schema::create('genders', function (Blueprint $table) {
+            $table->id();
+            $table->string('code')->unique()->nullable();
+            $table->string('name'); // e.g. Male, Female
             $table->timestamps();
-
-            $table->unique(['department_id', 'designation_id']);
         });
     }
 
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('department_designation');
+        Schema::dropIfExists('genders');
     }
 };

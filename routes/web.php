@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Test\TestController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Device\DeviceManageController;
 use App\Http\Controllers\DepartmentDesignation\DepartmentManageController;
 use App\Http\Controllers\DepartmentDesignation\DesignationManageController;
+
+Route::get('/test',[TestController::class, 'index'])->name('test');
 
 Route::get('/', [AuthenticationController::class, 'loginForm'])->name('login');
 Route::post('/login', [AuthenticationController::class, 'loginSubmit'])->name('login.submit');

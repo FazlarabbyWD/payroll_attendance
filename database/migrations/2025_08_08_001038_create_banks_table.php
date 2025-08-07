@@ -11,15 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('departments', function (Blueprint $table) {
+        Schema::create('banks', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
-            $table->string('description')->nullable();
+            $table->string('type')->nullable(); // Government, Private, Islamic, Specialized
             $table->timestamps();
-            $table->softDeletes();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
-            $table->foreignId('deleted_by')->nullable()->constrained('users')->onDelete('set null');
 
             $table->index('name');
         });
@@ -30,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('departments');
+        Schema::dropIfExists('banks');
     }
 };

@@ -8,8 +8,8 @@
                         <tr>
                             <th>Sl No.</th>
                             <th>Designation Name</th>
+                             <th>Department</th>
                             <th>Description</th>
-                            <th>Department</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -18,10 +18,12 @@
                         <tr>
                             <td>{{ $key + 1 }}</td>
                             <td>{{ $designation->name }}</td>
+                             <td>
+                                @foreach ($designation->departments as $department)
+                                <span class="badge rounded-pill text-bg-info">{{ $department->name }}</span>
+                                @endforeach
+                            </td>
                             <td>{{ $designation->description }}</td>
-                            <td>{{ $designation->department->name }}</td>
-
-
                             <td class="d-flex align-items-center">
                                 <div class="d-inline-block">
                                     <a href="javascript:;"

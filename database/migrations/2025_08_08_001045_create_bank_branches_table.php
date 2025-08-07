@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('department_designation', function (Blueprint $table) {
-        $table->id();
-            $table->foreignId('department_id')->constrained()->onDelete('cascade');
-            $table->foreignId('designation_id')->constrained()->onDelete('cascade');
+        Schema::create('bank_branches', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('bank_id')->constrained()->onDelete('cascade');
+            $table->string('branch_name');
+            $table->string('routing_no')->nullable();
             $table->timestamps();
 
-            $table->unique(['department_id', 'designation_id']);
+            $table->unique(['bank_id', 'branch_name']);
         });
     }
 
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('department_designation');
+        Schema::dropIfExists('bank_branches');
     }
 };

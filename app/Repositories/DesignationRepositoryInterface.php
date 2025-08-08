@@ -8,7 +8,7 @@ interface DesignationRepositoryInterface
 
     public function create(array $designationData): Designation;
     public function find(string $id): ?Designation;
-    public function getDepartments();
+ 
     public function getDesignations();
 
     public function update(Designation $designation, array $designationData): Designation;

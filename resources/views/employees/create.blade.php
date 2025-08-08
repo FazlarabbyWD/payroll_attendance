@@ -4,28 +4,38 @@
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="row">
         <div class="col-md-12">
-            <div class="nav-align-top">
-                <div class="d-flex mb-3 justify-content-between align-items-center">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb breadcrumb-custom-icon">
-                            <li class="breadcrumb-item">
-                                <a href="javascript:void(0);">Employee</a>
-                                <i class="breadcrumb-icon icon-base ri ri-arrow-right-circle-line align-middle"></i>
-                            </li>
-                            <li class="breadcrumb-item active">Add</li>
-                        </ol>
-                    </nav>
-                    <div class="dt-buttons btn-group flex-wrap">
-                        <a href="{{ route('employees.index') }}" class="btn add-new btn-primary" tabindex="0">
-                            <span>
-                                <i class="icon-base ri ri-list-line icon-sm me-0 me-sm-2 d-sm-none d-inline-block"></i>
-                                <span class="d-none d-sm-inline-block">Employee List</span>
-                            </span>
-                        </a>
-                    </div>
 
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <!-- Left: Navigation Pills -->
+                <ul class="nav nav-pills flex-row">
+                    <li class="nav-item">
+                        <a class="nav-link active waves-effect waves-light" href="javascript:void(0);">
+                            <i class="icon-base ri ri-group-line icon-sm me-1_5"></i>Employee
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link waves-effect waves-light">
+                            <i class="icon-base ri ri-link-m icon-sm me-1_5"></i>Personal Info
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link waves-effect waves-light">
+                            <i class="menu-icon icon-base ri ri-bill-line"></i>Payroll
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Right: Button -->
+                <div class="dt-buttons btn-group">
+                    <a href="{{ route('employees.index') }}" class="btn add-new btn-primary">
+                        <i class="icon-base ri ri-list-line icon-sm me-0 me-sm-2 d-sm-none d-inline-block"></i>
+                        <span class="d-none d-sm-inline-block">Employee List</span>
+                    </a>
                 </div>
             </div>
+
+
             <div class="card mb-6">
                 <!-- Account -->
                 <div class="card-body">
@@ -53,36 +63,68 @@
                 <div class="card-body pt-0">
                     <form id="formAccountSettings" method="POST" action="{{ route('employees.store') }}">
                         @csrf
+
+                        @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        @endif
+
                         <div class="row mt-1 g-5">
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
-                                    <input class="form-control" type="text" id="firstName" name="first_name"
-                                        autofocus="" required>
+                                    <input class="form-control @error('first_name') is-invalid @enderror" type="text"
+                                        id="firstName" name="first_name" autofocus="" required
+                                        value="{{ old('first_name') }}">
                                     <label for="firstName">First Name <span>*</span></label>
+                                    @error('first_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
-                                    <input class="form-control" type="text" name="last_name" id="lastName">
-                                    <label for="lastName">Last Name<span>*</span></label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="input-group input-group-merge">
-                                    <div class="form-floating form-floating-outline">
-                                        <input type="text" id="phone_no" name="phone_no" class="form-control"
-                                            placeholder="01700000000">
-                                        <label for="phone_no">Phone Number <span>*</span></label>
-                                    </div>
-
+                                    <input class="form-control @error('last_name') is-invalid @enderror" type="text"
+                                        name="last_name" id="lastName" value="{{ old('last_name') }}">
+                                    <label for="lastName">Last Name</label>
+                                    @error('last_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
-                                    <input type="date" id="date_of_joining" name="date_of_joining" class="form-control">
+                                    <input type="date" id="date_of_joining" name="date_of_joining"
+                                        class="form-control @error('date_of_joining') is-invalid @enderror"
+                                        value="{{ old('date_of_joining') }}">
                                     <label for="date_of_joining">Date of Joining <span>*</span></label>
+                                    @error('date_of_joining')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <select id="employment_type_id" name="employment_type_id"
+                                        class="select2 form-select @error('employment_type_id') is-invalid @enderror">
+                                        <option value="">Select Employment Type </option>
+                                        @foreach($employeeTypes as $employeeType)
+                                        <option value="{{ $employeeType->id }}"
+                                            {{ old('employment_type_id') == $employeeType->id ? 'selected' : '' }}>
+                                            {{ $employeeType->name }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                    <label for="employment_type_id">Employment Type <span>*</span></label>
+                                    @error('employment_type_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
@@ -90,56 +132,87 @@
 
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
-                                    <select id="department_id" name="department_id" class="select2 form-select">
-                                        <option value="">Select Department</option>
+                                    <select id="department_id" name="department_id"
+                                        class="select2 form-select @error('department_id') is-invalid @enderror">
+                                        <option value="">Select Department </option>
                                         @foreach($departments as $department)
-                                        <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                        <option value="{{ $department->id }}"
+                                            {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                                            {{ $department->name }}
+                                        </option>
                                         @endforeach
                                     </select>
-                                    <label for="department_id">Department</label>
+                                    <label for="department_id">Department <span>*</span></label>
+                                    @error('department_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
-                                    <select id="designation_id" name="designation_id" class="select2 form-select">
+                                    <select id="designation_id" name="designation_id"
+                                        class="select2 form-select @error('designation_id') is-invalid @enderror">
                                         <option value="">Select Designation</option>
-                                        @foreach($designations as $designation)
-                                        <option value="{{ $designation->id }}">{{ $designation->name }}</option>
-                                        @endforeach
                                     </select>
-                                    <label for="designation_id">Designation</label>
+
+                                    <label for="designation_id">Designation <span>*</span></label>
+                                    @error('designation_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
+
 
                         </div>
                         <div class="mt-6">
                             <button type="submit" class="btn btn-primary me-3 waves-effect waves-light">Save
-                                changes</button>
+                                & Next</button>
                             <button type="reset" class="btn btn-outline-secondary waves-effect">Reset</button>
                         </div>
                     </form>
                 </div>
                 <!-- /Account -->
             </div>
-            {{-- <div class="card">
-                <h5 class="card-header">Delete Account</h5>
-                <div class="card-body">
-                    <form id="formAccountDeactivation" onsubmit="return false">
-                        <div class="form-check mb-6 ms-3">
-                            <input class="form-check-input" type="checkbox" name="accountActivation"
-                                id="accountActivation">
-                            <label class="form-check-label" for="accountActivation">I confirm my account
-                                deactivation</label>
-                        </div>
-                        <button type="submit" class="btn btn-danger deactivate-account waves-effect waves-light"
-                            disabled="disabled">
-                            Deactivate Account
-                        </button>
-                    </form>
-                </div>
-            </div> --}}
+
         </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+var old = @json(session()->getOldInput());
+
+$(document).ready(function () {
+    $('#department_id').on('change', function () {
+        let departmentId = $(this).val();
+
+        if (departmentId) {
+            $.ajax({
+                url: "{{ route('get.designations.by.department') }}",
+                type: "GET",
+                data: { department_id: departmentId },
+                success: function (data) {
+                    let options = '<option value="">Select Designation</option>';
+                    data.forEach(function (designation) {
+                        options += `<option value="${designation.id}" ${old && old['designation_id'] == designation.id ? 'selected' : ''}>
+                                        ${designation.name}
+                                    </option>`;
+                    });
+                    $('#designation_id').html(options).trigger('change');
+                },
+                error: function () {
+                    alert('Failed to fetch designations.');
+                }
+            });
+        } else {
+            $('#designation_id').html('<option value="">Select Designation</option>').trigger('change');
+        }
+    });
+});
+</script>
+@endpush
+
+

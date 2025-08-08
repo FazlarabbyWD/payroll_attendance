@@ -8,7 +8,7 @@ use App\Http\Requests\DesignationUpdateRequest;
 interface DesignationServiceInterface
 {
     public function getAllDesignations();
-    public function getAllDepartments();
+   
     public function createDesignation(DesignationStoreRequest $request): Designation;
     public function findDesignation(string $id): ?Designation;
 

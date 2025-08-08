@@ -1,30 +1,32 @@
 <?php
 namespace App\Http\Controllers\DepartmentDesignation;
 
-use Illuminate\Support\Facades\Log;
+use App\Exceptions\DesignationNotFoundException;
 use App\Http\Controllers\Controller;
-use App\Services\DesignationServiceInterface;
 use App\Http\Requests\DesignationStoreRequest;
 use App\Http\Requests\DesignationUpdateRequest;
-use App\Exceptions\DesignationNotFoundException;
+use App\Services\DepartmentServiceInterface;
+use App\Services\DesignationServiceInterface;
+use Illuminate\Support\Facades\Log;
 
 class DesignationManageController extends Controller
 {
 
     protected $designationService;
+    protected $departmentsService;
     protected $designationCrudLog;
 
-    public function __construct(DesignationServiceInterface $designationService)
+    public function __construct(DesignationServiceInterface $designationService, DepartmentServiceInterface $departmentsService)
     {
         $this->designationService = $designationService;
+        $this->departmentsService = $departmentsService;
         $this->designationCrudLog = Log::channel('designationStoreLog');
     }
 
     public function index()
     {
         $designations = $this->designationService->getAllDesignations();
-        $departments = $this->designationService->getAllDepartments();
-
+        $departments  = $this->departmentsService->getAllDepartments();
 
         return view('designations.index', compact('designations', 'departments'));
     }
@@ -63,8 +65,7 @@ class DesignationManageController extends Controller
     {
         try {
             $designation = $this->designationService->findDesignation($id);
-
-            $departments = $this->designationService->getAllDepartments();
+            $departments = $this->departmentsService->getAllDepartments();
 
             return view('designations.edit', compact('designation', 'departments'));
 
@@ -85,10 +86,8 @@ class DesignationManageController extends Controller
         }
     }
 
-
     public function update(DesignationUpdateRequest $request, string $id)
     {
-        // dd($request->all());
 
         $this->designationCrudLog->info('Received designation update request', ['designation_id' => $id]);
 
@@ -106,9 +105,9 @@ class DesignationManageController extends Controller
             return redirect()->route('designations.index')->withErrors(['error' => $e->getMessage()]);
         } catch (\Exception $e) {
             $this->designationCrudLog->error('Failed to update designation', [
-                'designation_id'  => $id,
-                'error_message'   => $e->getMessage(),
-                'trace'           => $e->getTraceAsString(),
+                'designation_id' => $id,
+                'error_message'  => $e->getMessage(),
+                'trace'          => $e->getTraceAsString(),
             ]);
 
             return redirect()->back()->withInput()->withErrors([
@@ -117,8 +116,7 @@ class DesignationManageController extends Controller
         }
     }
 
-
-     public function destroy(string $id)
+    public function destroy(string $id)
     {
         $this->designationCrudLog->info('Received designation deletion request', ['designation_id' => $id]);
 
@@ -133,9 +131,9 @@ class DesignationManageController extends Controller
             return redirect()->route('designations.index')->withErrors(['error' => $e->getMessage()]);
         } catch (\Exception $e) {
             $this->designationCrudLog->error('Failed to delete designation', [
-                'designation_id'  => $id,
-                'error_message'   => $e->getMessage(),
-                'trace'           => $e->getTraceAsString(),
+                'designation_id' => $id,
+                'error_message'  => $e->getMessage(),
+                'trace'          => $e->getTraceAsString(),
             ]);
 
             return redirect()->route('designations.index')->withErrors([

@@ -29,11 +29,7 @@ class DesignationService implements DesignationServiceInterface
         return $this->designationRepository->getDesignations();
     }
 
-      public function getAllDepartments()
-    {
-        return $this->designationRepository->getDepartments();
-    }
-
+   
 
     public function createDesignation(DesignationStoreRequest $request): Designation
     {

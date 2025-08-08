@@ -68,7 +68,7 @@ class DesignationRepository implements DesignationRepositoryInterface
     public function delete(Designation $designation): void
     {
         DB::transaction(function () use ($designation) {
-            $designation->departments()->detach(); 
+            $designation->departments()->detach();
 
             $designation->delete();
 
@@ -83,11 +83,7 @@ class DesignationRepository implements DesignationRepositoryInterface
         return Designation::with('departments')->find($id);
     }
 
-    public function getDepartments()
-    {
-        return Department::all();
-    }
-
+   
     public function getDesignations()
     {
         return Designation::all();

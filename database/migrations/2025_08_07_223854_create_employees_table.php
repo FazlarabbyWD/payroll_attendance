@@ -28,13 +28,12 @@ return new class extends Migration
             $table->foreignId('employment_status_id')->default(1)->constrained('employment_statuses');
             $table->foreignId('employment_type_id')->default(1)->constrained('employment_types');
             $table->foreignId('gender_id')->nullable()->constrained('genders');
-              $table->foreignId('religion_id')->nullable()->constrained('religions');
+            $table->foreignId('religion_id')->nullable()->constrained('religions');
             $table->foreignId('marital_status_id')->nullable()->constrained('marital_statuses');
             $table->foreignId('blood_group_id')->nullable()->constrained('blood_groups');
 
             $table->string('national_id')->nullable()->unique();
             $table->string('passport_number')->nullable()->unique();
-
 
             $table->timestamps();
             $table->softDeletes();
@@ -42,7 +41,7 @@ return new class extends Migration
             $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignId('deleted_by')->nullable()->constrained('users')->onDelete('set null');
 
-          $table->index(['employee_id', 'phone_no','first_name'], 'employee_search_index');
+            $table->index(['employee_id', 'phone_no', 'first_name'], 'employee_search_index');
 
         });
     }

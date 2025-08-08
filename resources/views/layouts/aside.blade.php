@@ -55,22 +55,25 @@
 
         <!-- Apps & Pages -->
         <li class="menu-header mt-7">
-            <span class="menu-header-text">Acount &amp; Devices</span>
+            <span class="menu-header-text">Account &amp; Devices</span>
         </li>
         <!-- Pages -->
-        <li class="menu-item {{ request()->is('users*') ? 'open' : '' }}">
+
+           <li class="menu-item {{ request()->is('employees*') ? 'open' : '' }}">
             <a href="#" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ri ri-layout-left-line"></i>
-                <div data-i18n="Account Settings">User Management</div>
+                <i class="icon-base ri ri-team-line icon-sm me-1_5"></i>
+                <div data-i18n="Employee Settings">Employee Management</div>
             </a>
             <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('users.index') ? 'active' : '' }}">
-                    <a href="{{ route('users.index') }}" class="menu-link">
-                        <div data-i18n="Account">User List</div>
+                <li class="menu-item {{ request()->routeIs('employees.index') ? 'active' : '' }}">
+                    <a href="{{ route('employees.index') }}" class="menu-link">
+                        <div data-i18n="Employee">Employee List</div>
                     </a>
                 </li>
             </ul>
         </li>
+
+
 
 
         <li class="menu-item {{ request()->is('devices*') ? 'open' : '' }}">
@@ -103,6 +106,20 @@
                 <li class="menu-item {{ request()->routeIs('designations.index') ? 'active' : '' }}">
                     <a href="{{ route('designations.index') }}" class="menu-link">
                         <div data-i18n="Designation">Designation List</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+         <li class="menu-item {{ request()->is('users*') ? 'open' : '' }}">
+            <a href="#" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ri ri-user-line"></i>
+                <div data-i18n="Account Settings">User Management</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('users.index') ? 'active' : '' }}">
+                    <a href="{{ route('users.index') }}" class="menu-link">
+                        <div data-i18n="Account">User List</div>
                     </a>
                 </li>
             </ul>

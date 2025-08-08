@@ -6,6 +6,7 @@ use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Device\DeviceManageController;
+use App\Http\Controllers\Employee\EmployeeManageController;
 use App\Http\Controllers\DepartmentDesignation\DepartmentManageController;
 use App\Http\Controllers\DepartmentDesignation\DesignationManageController;
 
@@ -23,6 +24,7 @@ Route::resource('users', UserController::class);
 Route::resource('devices', DeviceManageController::class);
 Route::resource('departments', DepartmentManageController::class);
 Route::resource('designations', DesignationManageController::class);
+Route::resource('employees', EmployeeManageController::class);
 
 
 });

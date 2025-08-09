@@ -1,23 +1,40 @@
 <?php
-
 namespace App\Http\Controllers\Test;
 
-use App\Models\Device;
-use Illuminate\Http\Request;
-use Jmrashed\Zkteco\Lib\ZKTeco;
 use App\Http\Controllers\Controller;
+use App\Models\Device;
+use Jmrashed\Zkteco\Lib\ZKTeco;
 
 class TestController extends Controller
 {
-    public function index(){
+    public function index()
+    {
 
-        $deviceIp = Device::get('ip_address');
-        $devicePort = Device::get('port');
+       $deviceIp = Device::where('status', 1)->value('ip_address');
 
-        $zk = new ZKTeco($deviceIp, $devicePort);
+        $zk = new ZKTeco($deviceIp);
 
         $connected = $zk->connect();
 
-        dd($connected); // This will output the connection status
+        $users = $zk->getUser();
+
+        dd($users);
+
+        // $uid = 167;
+
+        // $removedUser = $zk->removeUser($uid);
+
+        // dd($removedUser);
+
+        // $uid=167;
+        // $userid = 155;
+        // $name = 'Test User';
+        // $password=null;
+        // $role=0;
+        // $cardno='0000000000';
+
+
+        // $setUserResult = $zk->setUser($uid, $userid, $name, $password, $role, $cardno);
+        // dd($setUserResult);
     }
 }

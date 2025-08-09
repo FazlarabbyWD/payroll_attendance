@@ -154,6 +154,13 @@ return [
             'level'  => env('LOG_LEVEL', 'debug'),
             'days'   => 14,
         ],
+
+         'employeeStoreLog' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/employee_store.log'),
+            'level'  => env('LOG_LEVEL', 'debug'),
+            'days'   => 14,
+        ],
     ],
 
 ];

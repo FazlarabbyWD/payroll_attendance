@@ -2,6 +2,7 @@
 namespace App\Repositories;
 
 use App\Models\Device;
+use App\Models\Employee;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -23,7 +24,6 @@ class DeviceRepository implements DeviceRepositoryInterface
     {
 
         return DB::transaction(function () use ($deviceData) {
-
 
             $device              = new Device();
             $device->device_name = $deviceData['device_name'];
@@ -86,6 +86,22 @@ class DeviceRepository implements DeviceRepositoryInterface
                 'device_id' => $device->id,
             ]);
         });
+    }
+
+    public function getActiveDeviceIp(): ?string
+    {
+        return Device::where('status', 1)->value('ip_address');
+    }
+
+    public function updateEmployeeDeviceId(Employee $employee, int $userid): bool
+    {
+        $employee->employee_id = $userid;
+        return $employee->save();
+    }
+
+    public function getAllActiveDeviceIps()
+    {
+        return Device::where('status', 1)->pluck('ip_address');
     }
 
 }

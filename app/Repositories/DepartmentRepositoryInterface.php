@@ -12,4 +12,9 @@ interface DepartmentRepositoryInterface
     public function update(Department $Department, array $DepartmentData): Department;
     public function delete(Department $Department): void;
 
+    public function getGender();
+    public function getReligion();
+    public function getMaritalStatus();
+    public function getBloodGroup();
+
 }

@@ -1,16 +1,16 @@
 <?php
 namespace App\Services;
 
-use App\Models\Designation;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Database\QueryException;
-use App\Http\Requests\DesignationStoreRequest;
-use App\Http\Requests\DesignationUpdateRequest;
 use App\Exceptions\DesignationCreationException;
 use App\Exceptions\DesignationNotFoundException;
+use App\Http\Requests\DesignationStoreRequest;
+use App\Http\Requests\DesignationUpdateRequest;
+use App\Models\Designation;
 use App\Repositories\DesignationRepositoryInterface;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class DesignationService implements DesignationServiceInterface
 {
@@ -28,8 +28,6 @@ class DesignationService implements DesignationServiceInterface
     {
         return $this->designationRepository->getDesignations();
     }
-
-   
 
     public function createDesignation(DesignationStoreRequest $request): Designation
     {
@@ -105,7 +103,6 @@ class DesignationService implements DesignationServiceInterface
         }
     }
 
-
     public function updateDesignation(DesignationUpdateRequest $request, string $id): Designation
     {
         $designation = $this->findDesignation($id);
@@ -117,13 +114,12 @@ class DesignationService implements DesignationServiceInterface
             return $designation;
         } catch (\Exception $e) {
             $this->designationCrudLog->error('Failed to update designation', [
-                'designation_id'  => $id,
-                'error_message'   => $e->getMessage(),
+                'designation_id' => $id,
+                'error_message'  => $e->getMessage(),
             ]);
             throw $e;
         }
     }
-
 
     public function deleteDesignation(string $id): void
     {
@@ -133,13 +129,25 @@ class DesignationService implements DesignationServiceInterface
             $this->designationRepository->delete($designation);
         } catch (\Exception $e) {
             $this->designationCrudLog->error('Failed to delete designation', [
-                'designation_id'  => $id,
-                'error_message'   => $e->getMessage(),
+                'designation_id' => $id,
+                'error_message'  => $e->getMessage(),
             ]);
             throw $e;
         }
     }
 
+    public function getDesignationByDept(int $departmentId): array
+    {
+        try {
+            return $this->designationRepository->getDesignationByDept($departmentId);
+        } catch (\Exception $e) {
+            $this->designationCrudLog->error('Failed to get designations by department', [
+                'department_id' => $departmentId,
+                'error_message' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
 
     protected function isDeadlockOrConnectionException(\Exception $e): bool
     {

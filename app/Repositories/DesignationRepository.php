@@ -83,10 +83,21 @@ class DesignationRepository implements DesignationRepositoryInterface
         return Designation::with('departments')->find($id);
     }
 
-   
+
     public function getDesignations()
     {
         return Designation::all();
+    }
+
+    public function getDesignationByDept(int $departmentId): array
+    {
+        $department = Department::with('designations')->find($departmentId);
+
+        if (! $department) {
+            return [];
+        }
+
+        return $department->designations->toArray();
     }
 
 }

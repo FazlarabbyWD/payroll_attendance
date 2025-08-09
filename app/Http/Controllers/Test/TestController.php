@@ -10,7 +10,7 @@ class TestController extends Controller
     public function index()
     {
 
-       $deviceIp = Device::where('status', 1)->value('ip_address');
+        $deviceIp = Device::where('status', 1)->value('ip_address');
 
         $zk = new ZKTeco($deviceIp);
 
@@ -32,7 +32,6 @@ class TestController extends Controller
         // $password=null;
         // $role=0;
         // $cardno='0000000000';
-
 
         // $setUserResult = $zk->setUser($uid, $userid, $name, $password, $role, $cardno);
         // dd($setUserResult);

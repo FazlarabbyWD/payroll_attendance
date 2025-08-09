@@ -1,18 +1,17 @@
 <?php
 namespace App\Services;
 
-use App\Models\Employee;
-use Illuminate\Support\Str;
-use Jmrashed\Zkteco\Lib\ZKTeco;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Database\QueryException;
 use App\Exceptions\EmployeeCreationException;
+use App\Http\Requests\EmployeeBasicInfoStoreRequet;
+use App\Models\Employee;
 use App\Repositories\DeviceRepositoryInterface;
 use App\Repositories\EmployeeRepositoryInterface;
-use App\Http\Requests\EmployeeBasicInfoStoreRequet;
-use League\CommonMark\Parser\Inline\NewlineParser;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Jmrashed\Zkteco\Lib\ZKTeco;
 
 class EmployeeService implements EmployeeServiceInterface
 {
@@ -33,14 +32,14 @@ class EmployeeService implements EmployeeServiceInterface
         return $this->employeeRepository->getAllEmploymentTypes();
     }
 
-     public function createAndAddToDevice($request):Employee
+    public function createAndAddToDevice($request): Employee
     {
         return DB::transaction(function () use ($request) {
             $employee = $this->createEmployee($request);
-            $result = $this->addEmployeeToDevices($employee);
+            $result   = $this->addEmployeeToDevices($employee);
 
             if (! $result) {
-                throw new EmployeeCreationException ('Failed to add employee to device');
+                throw new EmployeeCreationException('Failed to add employee to device');
             }
 
             return $employee;
@@ -107,84 +106,109 @@ class EmployeeService implements EmployeeServiceInterface
 
     public function addEmployeeToDevices(Employee $employee): bool
     {
-        $this->employeeStoreLog->info('Attempting to add employee to Device', [
+        $this->employeeStoreLog->info('Attempting to add employee to Devices', [
             'employee_id'   => $employee->id,
             'employee_name' => $employee->first_name . ' ' . $employee->last_name,
         ]);
 
         try {
+          
+            $deviceIps = $this->deviceEmployeeAddRepository->getAllActiveDeviceIps();
 
-            $deviceIp = $this->deviceEmployeeAddRepository->getActiveDeviceIp();
-
-            if (! $deviceIp) {
-                $this->employeeStoreLog->error('No active device found.', [
+            if ($deviceIps->isEmpty()) {
+                $this->employeeStoreLog->error('No active devices found.', [
                     'employee_id' => $employee->id,
                 ]);
                 return false;
             }
 
-            $zk = new ZKTeco($deviceIp);
-            $connected = $zk->connect();
+            $maxUid    = 0;
+            $maxUserId = 0;
 
-            if (! $connected) {
-                $this->employeeStoreLog->error('Failed to connect to ZKTeco device', [
-                    'employee_id' => $employee->id,
-                    'device_ip'   => $deviceIp,
-                ]);
-                return false;
-            }
 
-            $users = $zk->getUser();
+            foreach ($deviceIps as $deviceIp) {
+                $zk = new ZKTeco($deviceIp);
+                if (! $zk->connect()) {
+                    $this->employeeStoreLog->warning("Failed to connect to device: $deviceIp", [
+                        'employee_id' => $employee->id,
+                        'device_ip'   => $deviceIp,
+                    ]);
+                    continue;
+                }
 
-            if ($users === false) {
-                $this->employeeStoreLog->error('Failed to get users from device', [
-                    'employee_id' => $employee->id,
-                    'device_ip'   => $deviceIp,
-                ]);
+                $users = $zk->getUser();
+                if ($users === false) {
+                    $this->employeeStoreLog->warning("Failed to get users from device: $deviceIp", [
+                        'employee_id' => $employee->id,
+                        'device_ip'   => $deviceIp,
+                    ]);
+                    $zk->disconnect();
+                    continue;
+                }
+
+                foreach ($users as $user) {
+                    if (! empty($user['uid']) && $user['uid'] > $maxUid) {
+                        $maxUid = $user['uid'];
+                    }
+                    if (! empty($user['userid']) && $user['userid'] > $maxUserId) {
+                        $maxUserId = $user['userid'];
+                    }
+                }
                 $zk->disconnect();
-                return false;
             }
 
-            $maxUid = $maxUserId = 0;
-            foreach ($users as $user) {
-                if (! empty($user['uid']) && $user['uid'] > $maxUid) {
-                    $maxUid = $user['uid'];
-                }
-                if (! empty($user['userid']) && $user['userid'] > $maxUserId) {
-                    $maxUserId = $user['userid'];
-                }
-            }
 
             $uid    = $maxUid + 1;
             $userid = $maxUserId + 1;
             $name   = $employee->first_name . ' ' . $employee->last_name;
 
-            $result = $zk->setUser($uid, $userid, $name, null, 0, '0000000000');
-            if ($result === false) {
-                $this->employeeStoreLog->error('Failed to set user in ZKTeco device', [
+            $anySuccess = false;
+
+
+            foreach ($deviceIps as $deviceIp) {
+                $zk = new ZKTeco($deviceIp);
+                if (! $zk->connect()) {
+                    $this->employeeStoreLog->warning("Failed to connect to device for adding user: $deviceIp", [
+                        'employee_id' => $employee->id,
+                        'device_ip'   => $deviceIp,
+                    ]);
+                    continue;
+                }
+
+                $result = $zk->setUser($uid, $userid, $name, null, 0, '0000000000');
+
+                if ($result === false) {
+                    $this->employeeStoreLog->warning("Failed to set user on device: $deviceIp", [
+                        'employee_id' => $employee->id,
+                        'device_ip'   => $deviceIp,
+                        'uid'         => $uid,
+                        'userid'      => $userid,
+                    ]);
+                    $zk->disconnect();
+                    continue;
+                }
+
+                $zk->disconnect();
+                $anySuccess = true;
+
+                $this->employeeStoreLog->info("User added to device: $deviceIp", [
                     'employee_id' => $employee->id,
-                    'device_ip'   => $deviceIp,
                     'uid'         => $uid,
                     'userid'      => $userid,
+                    'device_ip'   => $deviceIp,
                 ]);
-                $zk->disconnect();
+            }
+
+            if (! $anySuccess) {
+
                 return false;
             }
 
             $this->employeeRepository->updateEmployeeIdOnDevice($employee, $userid);
-            $zk->disconnect();
-
-
-            $this->employeeStoreLog->info('Employee added to device successfully', [
-                'employee_id' => $employee->id,
-                'uid'         => $uid,
-                'userid'      => $userid,
-                'device_ip'   => $deviceIp,
-            ]);
 
             return true;
         } catch (\Exception $e) {
-            $this->employeeStoreLog->error('Error adding employee to device', [
+            $this->employeeStoreLog->error('Error adding employee to devices', [
                 'employee_id'   => $employee->id,
                 'error_message' => $e->getMessage(),
             ]);

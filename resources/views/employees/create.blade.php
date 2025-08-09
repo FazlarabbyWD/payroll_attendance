@@ -5,25 +5,48 @@
     <div class="row">
         <div class="col-md-12">
 
+            {{-- Flash messages --}}
+            @if(session('success'))
+            <div class="alert alert-secondary alert-dismissible" role="alert">
+                This is a secondary dismissible alert — check it out!
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+            @if(session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+            @endif
+            @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                 <!-- Left: Navigation Pills -->
                 <ul class="nav nav-pills flex-row">
                     <li class="nav-item">
                         <a class="nav-link active waves-effect waves-light" href="javascript:void(0);">
-                            <i class="icon-base ri ri-group-line icon-sm me-1_5"></i>Employee
+                            <i class="icon-base ri ri-group-line icon-sm me-1_5"></i>Add Employee
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link waves-effect waves-light">
+
+                    {{-- <li class="nav-item">
+                        <a class="nav-link waves-effect waves-light" href="javascript:void(0);"
+                            onclick="alert('Please save employee first.'); return false;">
                             <i class="icon-base ri ri-link-m icon-sm me-1_5"></i>Personal Info
                         </a>
                     </li>
+
 
                     <li class="nav-item">
                         <a class="nav-link waves-effect waves-light">
                             <i class="menu-icon icon-base ri ri-bill-line"></i>Payroll
                         </a>
-                    </li>
+                    </li> --}}
                 </ul>
 
                 <!-- Right: Button -->
@@ -64,15 +87,7 @@
                     <form id="formAccountSettings" method="POST" action="{{ route('employees.store') }}">
                         @csrf
 
-                        @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                        @endif
+
 
                         <div class="row mt-1 g-5">
                             <div class="col-md-6 form-control-validation">
@@ -113,10 +128,11 @@
                                 <div class="form-floating form-floating-outline">
                                     <select id="employment_type_id" name="employment_type_id"
                                         class="select2 form-select @error('employment_type_id') is-invalid @enderror">
-                                        <option value="">Select Employment Type </option>
+                                        <option value="">Select Employment Type</option>
                                         @foreach($employeeTypes as $employeeType)
-                                        <option value="{{ $employeeType->id }}"
-                                            {{ old('employment_type_id') == $employeeType->id ? 'selected' : '' }}>
+                                        <option value="{{ $employeeType->id }}" {{
+                                            old('employment_type_id')==$employeeType->id ? 'selected' : ''
+                                            }}>
                                             {{ $employeeType->name }}
                                         </option>
                                         @endforeach
@@ -128,16 +144,14 @@
                                 </div>
                             </div>
 
-
-
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <select id="department_id" name="department_id"
                                         class="select2 form-select @error('department_id') is-invalid @enderror">
-                                        <option value="">Select Department </option>
+                                        <option value="">Select Department</option>
                                         @foreach($departments as $department)
-                                        <option value="{{ $department->id }}"
-                                            {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                                        <option value="{{ $department->id }}" {{ old('department_id')==$department->id ?
+                                            'selected' : '' }}>
                                             {{ $department->name }}
                                         </option>
                                         @endforeach
@@ -162,8 +176,6 @@
                                     @enderror
                                 </div>
                             </div>
-
-
                         </div>
                         <div class="mt-6">
                             <button type="submit" class="btn btn-primary me-3 waves-effect waves-light">Save
@@ -183,7 +195,7 @@
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-var old = @json(session()->getOldInput());
+    var old = @json(session()->getOldInput());
 
 $(document).ready(function () {
     $('#department_id').on('change', function () {
@@ -214,5 +226,3 @@ $(document).ready(function () {
 });
 </script>
 @endpush
-
-

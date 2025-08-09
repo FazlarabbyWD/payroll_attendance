@@ -2,6 +2,25 @@
 @section('main-content')
 <div class="container-xxl flex-grow-1 container-p-y">
 
+    {{-- Flash messages --}}
+    @if(session('success'))
+    <div class="alert alert-secondary alert-dismissible" role="alert">
+        This is a secondary dismissible alert — check it out!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+    @if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+    @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
     <div class="row g-6 mb-6">
         <div class="col-sm-6 col-xl-3">
             <div class="card">

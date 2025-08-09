@@ -32,15 +32,20 @@ class EmployeeService implements EmployeeServiceInterface
         return $this->employeeRepository->getAllEmploymentTypes();
     }
 
+    public function findEmployeeById(int $employeeId): ?Employee
+    {
+        return $this->employeeRepository->findEmployeeById($employeeId);
+    }
+
     public function createAndAddToDevice($request): Employee
     {
         return DB::transaction(function () use ($request) {
             $employee = $this->createEmployee($request);
-            $result   = $this->addEmployeeToDevices($employee);
+            // $result   = $this->addEmployeeToDevices($employee);
 
-            if (! $result) {
-                throw new EmployeeCreationException('Failed to add employee to device');
-            }
+            // if (! $result) {
+            //     throw new EmployeeCreationException('Failed to add employee to device');
+            // }
 
             return $employee;
         });
@@ -112,7 +117,7 @@ class EmployeeService implements EmployeeServiceInterface
         ]);
 
         try {
-          
+
             $deviceIps = $this->deviceEmployeeAddRepository->getAllActiveDeviceIps();
 
             if ($deviceIps->isEmpty()) {
@@ -124,7 +129,6 @@ class EmployeeService implements EmployeeServiceInterface
 
             $maxUid    = 0;
             $maxUserId = 0;
-
 
             foreach ($deviceIps as $deviceIp) {
                 $zk = new ZKTeco($deviceIp);
@@ -157,13 +161,11 @@ class EmployeeService implements EmployeeServiceInterface
                 $zk->disconnect();
             }
 
-
             $uid    = $maxUid + 1;
             $userid = $maxUserId + 1;
             $name   = $employee->first_name . ' ' . $employee->last_name;
 
             $anySuccess = false;
-
 
             foreach ($deviceIps as $deviceIp) {
                 $zk = new ZKTeco($deviceIp);
@@ -216,7 +218,59 @@ class EmployeeService implements EmployeeServiceInterface
         }
     }
 
+    public function savePersonalAndAddress(Employee $employee, array $personalData, array $addressData): Employee
+    {
+        return DB::transaction(function () use ($employee, $personalData, $addressData) {
+            $this->addEmployeePersonalInfo($employee, $personalData);
+            $this->addEmployeeAddress($employee, $addressData);
+            return $employee;
+        });
+    }
 
+    public function addEmployeePersonalInfo(Employee $employee, array $personalData): Employee
+    {
+        try {
+            $this->employeeRepository->addEmployeePersonalInfo($employee, $personalData);
+
+            $this->employeeStoreLog->info('Employee personal info updated', [
+                'employee_id' => $employee->id,
+                'phone_no'    => $personalData['phone_no'],
+                'email'       => $personalData['email'],
+            ]);
+
+            return $employee;
+        } catch (\Exception $e) {
+            $this->employeeStoreLog->error('Error updating employee personal info', [
+                'employee_id'   => $employee->id,
+                'error_message' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    public function addEmployeeAddress(Employee $employee, array $addressData): Employee
+    {
+        try {
+            if (! isset($addressData['type'])) {
+                throw new \InvalidArgumentException("Address type is required.");
+            }
+
+            $this->employeeRepository->addEmployeeAddress($employee, $addressData);
+
+            $this->employeeStoreLog->info('Employee address updated', [
+                'employee_id'  => $employee->id,
+                'address_type' => $addressData['type'],
+            ]);
+
+            return $employee;
+        } catch (\Exception $e) {
+            $this->employeeStoreLog->error('Error updating employee address', [
+                'employee_id'   => $employee->id,
+                'error_message' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
     protected function isDeadlockOrConnectionException(\Exception $e): bool
     {
         $message    = $e->getMessage();

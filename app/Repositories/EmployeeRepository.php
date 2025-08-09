@@ -2,6 +2,7 @@
 namespace App\Repositories;
 
 use App\Models\Employee;
+use App\Models\EmployeeAddress;
 use App\Models\EmploymentType;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -20,6 +21,11 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         return EmploymentType::all();
     }
 
+    public function findEmployeeById(int $employeeId): ?Employee
+    {
+        return Employee::find($employeeId);
+    }
+
     public function createEmployee(array $data)
     {
         try {
@@ -36,7 +42,7 @@ class EmployeeRepository implements EmployeeRepositoryInterface
                 $employee->save();
 
                 $this->employeeStoreLog->info('Employee record inserted into DB', [
-                    'id'        => $employee->id,
+                    'id'                 => $employee->id,
                     'employee_name'      => $employee->first_name . ' ' . $employee->last_name,
                     'date_of_joining'    => $employee->date_of_joining,
                     'employment_type_id' => $employee->employment_type_id,
@@ -55,7 +61,7 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         }
     }
 
-    public function updateEmployeeIdOnDevice($employee,$userid)
+    public function updateEmployeeIdOnDevice($employee, $userid)
     {
         try {
 
@@ -63,16 +69,72 @@ class EmployeeRepository implements EmployeeRepositoryInterface
             $employee->save();
 
             $this->employeeStoreLog->info('Employee record updated in DB', [
-                'employee_id' => $employee->id,
+                'employee_id'          => $employee->id,
                 'employee_employee_id' => $employee->employee_id,
             ]);
         } catch (\Exception $e) {
             $this->employeeStoreLog->error('Error during Employee record update', [
-                'employee_id' => $employee->id,
+                'employee_id'   => $employee->id,
                 'error_message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+                'trace'         => $e->getTraceAsString(),
             ]);
             throw $e;
         }
     }
+
+    public function addEmployeePersonalInfo(Employee $employee, array $personalData)
+    {
+        try {
+            $employee->phone_no          = $personalData['phone_no'];
+            $employee->email             = $personalData['email'];
+            $employee->date_of_birth     = $personalData['date_of_birth'];
+            $employee->gender_id         = $personalData['gender_id'];
+            $employee->religion_id       = $personalData['religion_id'];
+            $employee->marital_status_id = $personalData['marital_status_id'];
+            $employee->blood_group_id    = $personalData['blood_group_id'];
+            $employee->national_id       = $personalData['national_id'];
+            $employee->save();
+
+            $this->employeeStoreLog->info('Employee personal info saved', [
+                'employee_id' => $employee->id,
+            ]);
+        } catch (\Exception $e) {
+            $this->employeeStoreLog->error('Error saving employee personal info', [
+                'employee_id'   => $employee->id,
+                'error_message' => $e->getMessage(),
+                'trace'         => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
+    }
+
+    public function addEmployeeAddress(Employee $employee, array $addressData)
+    {
+        try {
+            $address = EmployeeAddress::firstOrNew([
+                'employee_id' => $employee->id,
+                'type'        => $addressData['type'],
+            ]);
+
+            $address->country     = $addressData['country'];
+            $address->state       = $addressData['state'];
+            $address->city        = $addressData['city'];
+            $address->postal_code = $addressData['postal_code'];
+            $address->address     = $addressData['address'];
+            $address->save();
+
+            $this->employeeStoreLog->info('Employee address saved', [
+                'employee_id'  => $employee->id,
+                'address_type' => $address->type,
+            ]);
+        } catch (\Exception $e) {
+            $this->employeeStoreLog->error('Error saving employee address', [
+                'employee_id'   => $employee->id,
+                'error_message' => $e->getMessage(),
+                'trace'         => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
+    }
+
 }

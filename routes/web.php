@@ -29,4 +29,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/get-designations-by-department', [EmployeeManageController::class, 'getDesignationsByDepartment'])->name('get.designations.by.department');
 
     Route::get('/employee/personal-info', [EmployeeManageController::class, 'showPersonalInfoForm'])->name('employees.personal-info');
+
+    Route::post('/employee/personal-info', [EmployeeManageController::class, 'storePersonalAddressInfo'])->name('employees.personal-info.store');
 });

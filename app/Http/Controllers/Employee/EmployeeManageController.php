@@ -5,7 +5,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\DesgnByDept;
 use App\Http\Requests\EmployeeBasicInfoStoreRequet;
 use App\Http\Requests\EmployeePersonalInfoStoreRequest;
-use App\Models\Employee;
 use App\Services\DepartmentServiceInterface;
 use App\Services\DesignationServiceInterface;
 use App\Services\EmployeeServiceInterface;
@@ -30,7 +29,14 @@ class EmployeeManageController extends Controller
     }
     public function index()
     {
-        return view('employees.index');
+        $stats       = $this->employeeService->getEmployeeStats();
+        $departments = $this->departmentsService->getAllDepartments();
+        $bloodGroups = $this->departmentsService->getBloodGroup();
+        $employees   = $this->employeeService->getAllEmployees();
+
+        // dd($employees);
+
+        return view('employees.index', compact('stats', 'departments', 'bloodGroups','employees'));
     }
 
     public function create()
@@ -55,11 +61,7 @@ class EmployeeManageController extends Controller
                 'employee_name' => $employee->first_name . ' ' . $employee->last_name,
             ]);
 
-            return redirect()->route('employees.index')->with('success','Employee saved and synced to device successfully!');
-
-            // session(['employee_id' => $employee->id]);
-            // return redirect()->route('employees.personal-info', ['employee_id' => $employee->id])
-            //     ->with('success', 'Employee saved and synced to device successfully!');
+            return redirect()->route('employees.index')->with('success', 'Employee saved and synced to device successfully!');
 
         } catch (ValidationException $e) {
             $this->employeeStoreLog->error('Validation error during Employee creation', [

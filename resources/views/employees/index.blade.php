@@ -4,14 +4,20 @@
 
     {{-- Flash messages --}}
     @if(session('success'))
-    <div class="alert alert-secondary alert-dismissible" role="alert">
-        This is a secondary dismissible alert — check it out!
+    <div class="alert alert-success alert-dismissible" role="alert">
+        {{ session('success') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     @endif
+
+
     @if(session('error'))
-    <div class="alert alert-danger">{{ session('error') }}</div>
+    <div class="alert alert-danger alert-dismissible" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     @endif
+
     @if ($errors->any())
     <div class="alert alert-danger">
         <ul>
@@ -21,6 +27,7 @@
         </ul>
     </div>
     @endif
+
     <div class="row g-6 mb-6">
         <div class="col-sm-6 col-xl-3">
             <div class="card">
@@ -29,7 +36,7 @@
                         <div class="me-1">
                             <p class="text-heading mb-1">Total Employee</p>
                             <div class="d-flex align-items-center">
-                                <h4 class="mb-1 me-2">21,459</h4>
+                                <h4 class="mb-1 me-2">{{ $stats['employees'] }}</h4>
                             </div>
                         </div>
                         <div class="avatar">
@@ -48,7 +55,7 @@
                         <div class="me-1">
                             <p class="text-heading mb-1">Department</p>
                             <div class="d-flex align-items-center">
-                                <h4 class="mb-1 me-2">4,567</h4>
+                                <h4 class="mb-1 me-2">{{ $stats['departments'] }}</h4>
 
                             </div>
 
@@ -69,7 +76,7 @@
                         <div class="me-1">
                             <p class="text-heading mb-1">Verified Employee</p>
                             <div class="d-flex align-items-center">
-                                <h4 class="mb-1 me-2">19,860</h4>
+                                <h4 class="mb-1 me-2">{{ $stats['verifiedemployee'] }}</h4>
                             </div>
                         </div>
                         <div class="avatar">
@@ -88,7 +95,7 @@
                         <div class="me-1">
                             <p class="text-heading mb-1">Pending Verification</p>
                             <div class="d-flex align-items-center">
-                                <h4 class="mb-1 me-2">237</h4>
+                                <h4 class="mb-1 me-2">{{ $stats['pendingVerification'] }}</h4>
                             </div>
                         </div>
                         <div class="avatar">
@@ -129,9 +136,9 @@
                 <div class="col-md-4 employee_dept">
                     <select id="EMployeeDept" class="form-select text-capitalize">
                         <option value="">Select Department</option>
-                        <option value="hr">HR</option>
-                        <option value="it">IT</option>
-                        <option value="finance">FINANCE</option>
+                        @foreach ($departments as $department)
+                        <option value="{{ $department->id }}">{{ ucfirst($department->name) }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -148,9 +155,9 @@
                 <div class="col-md-4 employee_blood_group">
                     <select id="EmployeeBlood" class="form-select text-capitalize">
                         <option value="">Select Blood Group</option>
-                        <option value="a+" class="text-capitalize">A+</option>
-                        <option value="b+" class="text-capitalize">B+</option>
-                        <option value="o+" class="text-capitalize">O+</option>
+                        @foreach ($bloodGroups as $bloodGroup )
+                        <option value="{{ $bloodGroup->id }}">{{ ucfirst($bloodGroup->name) }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -248,28 +255,40 @@
                             </thead>
 
                             <tbody>
-
+                                @foreach($employees as $employee)
                                 <tr>
                                     <td class="control dtr-hidden" tabindex="0" style="display: none;"></td>
-                                    <td>EMP-123</td> <!-- Example Employee ID -->
+                                    <td>{{ $employee->employee_id }}</td>
                                     <td>
                                         <div class="d-flex justify-content-start align-items-center user-name">
                                             <div class="avatar-wrapper">
-                                                <div class="avatar avatar-sm me-4"><img
-                                                        src="{{ asset('/resources/assets/img/avatars/2.png') }}"
-                                                        alt="Avatar" class="rounded-circle"></div>
+                                                <div class="avatar avatar-sm me-4">
+                                                    <img src="{{ asset('/resources/assets/img/avatars/2.png') }}"
+                                                        alt="Avatar" class="rounded-circle">
+                                                </div>
                                             </div>
-                                            <div class="d-flex flex-column"><a href="app-user-view-account.html"
-                                                    class="text-heading text-truncate"><span class="fw-medium">Zsazsa
-                                                    </span></a></div>
+                                            <div class="d-flex flex-column">
+                                                <a href="app-user-view-account.html" class="text-heading text-truncate">
+                                                    <span class="fw-medium">{{ $employee->first_name }} {{
+                                                        $employee->last_name }}</span>
+                                                </a>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td>IT</td> <!-- Example Department -->
-                                    <td>Software Engineer</td> <!-- Example Designation -->
-                                    <td>01682282043</td> <!-- Example Phone -->
-                                    <td>O+</td> <!-- Example Blood Group -->
-                                    <td><span class="badge rounded-pill bg-label-success"
-                                            text-capitalized="">Active</span></td>
+                                    <td>{{ $employee->department->name ?? 'N/A' }}</td>
+                                    <!-- Assuming you have a Department relationship -->
+                                    <td>{{ $employee->designation->name ?? 'N/A' }}</td>
+                                    <!-- Assuming you have a Designation relationship -->
+                                    <td>{{ $employee->phone_no ?? 'N/A' }}</td>
+                                    <td>{{ $employee->bloodGroup->name ?? 'N/A' }}</td>
+                                    <!-- Assuming you have a BloodGroup relationship -->
+                                    <td>
+                                        <span
+                                            class="badge rounded-pill bg-label-{{ $employee->employment_status_id ? 'success' : 'danger' }}"
+                                            text-capitalized="">
+                                            {{ $employee->employment_status_id ? 'Active' : 'Inactive' }}
+                                        </span>
+                                    </td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <a href="javascript:;"
@@ -292,9 +311,7 @@
                                         </div>
                                     </td>
                                 </tr>
-
-                                <!-- More rows would go here -->
-
+                                @endforeach
                             </tbody>
                             <tfoot></tfoot>
                         </table>

@@ -23,6 +23,11 @@ class DepartmentRepository implements DepartmentRepositoryInterface
         return Department::all();
     }
 
+     public function countDepartments()
+    {
+        return Department::count();
+    }
+
     public function getGender()
     {
         return Gender::all();

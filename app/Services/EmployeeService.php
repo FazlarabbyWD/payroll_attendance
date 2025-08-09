@@ -4,6 +4,7 @@ namespace App\Services;
 use App\Exceptions\EmployeeCreationException;
 use App\Http\Requests\EmployeeBasicInfoStoreRequet;
 use App\Models\Employee;
+use App\Repositories\DepartmentRepositoryInterface;
 use App\Repositories\DeviceRepositoryInterface;
 use App\Repositories\EmployeeRepositoryInterface;
 use Illuminate\Database\QueryException;
@@ -17,13 +18,15 @@ class EmployeeService implements EmployeeServiceInterface
 {
     protected $employeeRepository;
     protected $employeeStoreLog;
+    protected $departmentRepository;
 
     protected $deviceEmployeeAddRepository;
 
-    public function __construct(EmployeeRepositoryInterface $employeeRepository, DeviceRepositoryInterface $deviceEmployeeAddRepository)
+    public function __construct(EmployeeRepositoryInterface $employeeRepository, DeviceRepositoryInterface $deviceEmployeeAddRepository, DepartmentRepositoryInterface $departmentRepository)
     {
         $this->employeeRepository          = $employeeRepository;
         $this->deviceEmployeeAddRepository = $deviceEmployeeAddRepository;
+        $this->departmentRepository        = $departmentRepository;
         $this->employeeStoreLog            = Log::channel('employeeStoreLog');
 
     }
@@ -32,9 +35,27 @@ class EmployeeService implements EmployeeServiceInterface
         return $this->employeeRepository->getAllEmploymentTypes();
     }
 
+    public function getAllEmployees()
+    {
+        return $this->employeeRepository->getAllEmployees();
+    }
+
     public function findEmployeeById(int $employeeId): ?Employee
     {
         return $this->employeeRepository->findEmployeeById($employeeId);
+    }
+
+    public function getEmployeeStats()
+    {
+        $employeeStats = $this->employeeRepository->getEmployeeStats();
+        $departments   = $this->departmentRepository->countDepartments();
+
+        return [
+            'employees'           => $employeeStats->total,
+            'verifiedemployee'    => $employeeStats->verified,
+            'pendingVerification' => $employeeStats->pending,
+            'departments'         => $departments,
+        ];
     }
 
     public function createAndAddToDevice($request): Employee

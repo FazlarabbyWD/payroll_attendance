@@ -16,6 +16,19 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         $this->employeeStoreLog = Log::channel('employeeStoreLog');
     }
 
+    public function getAllEmployees()
+    {
+        return Employee::all();
+    }
+    public function getEmployeeStats()
+    {
+        return Employee::selectRaw("
+            COUNT(*) as total,
+            SUM(CASE WHEN phone_no IS NOT NULL AND national_id IS NOT NULL THEN 1 ELSE 0 END) as verified,
+            SUM(CASE WHEN phone_no IS NULL AND national_id IS NULL THEN 1 ELSE 0 END) as pending
+        ")->first();
+    }
+
     public function getAllEmploymentTypes()
     {
         return EmploymentType::all();

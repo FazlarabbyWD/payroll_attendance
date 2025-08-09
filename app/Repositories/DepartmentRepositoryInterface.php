@@ -7,6 +7,7 @@ use App\Models\Department;
 interface DepartmentRepositoryInterface
 {
     public function getAll();
+    public function countDepartments();
     public function create(array $departmentData): Department;
     public function find(string $id): ?Department;
     public function update(Department $Department, array $DepartmentData): Department;

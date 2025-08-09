@@ -1,4 +1,5 @@
 @extends('app')
+
 @section('main-content')
 
 <div class="container-xxl flex-grow-1 container-p-y">
@@ -7,22 +8,24 @@
 
             {{-- Flash messages --}}
             @if(session('success'))
-            <div class="alert alert-secondary alert-dismissible" role="alert">
-                This is a secondary dismissible alert — check it out!
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+                <div class="alert alert-secondary alert-dismissible" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
             @endif
+
             @if(session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
+                <div class="alert alert-danger">{{ session('error') }}</div>
             @endif
+
             @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
 
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
@@ -33,20 +36,6 @@
                             <i class="icon-base ri ri-group-line icon-sm me-1_5"></i>Add Employee
                         </a>
                     </li>
-
-                    {{-- <li class="nav-item">
-                        <a class="nav-link waves-effect waves-light" href="javascript:void(0);"
-                            onclick="alert('Please save employee first.'); return false;">
-                            <i class="icon-base ri ri-link-m icon-sm me-1_5"></i>Personal Info
-                        </a>
-                    </li>
-
-
-                    <li class="nav-item">
-                        <a class="nav-link waves-effect waves-light">
-                            <i class="menu-icon icon-base ri ri-bill-line"></i>Payroll
-                        </a>
-                    </li> --}}
                 </ul>
 
                 <!-- Right: Button -->
@@ -57,7 +46,6 @@
                     </a>
                 </div>
             </div>
-
 
             <div class="card mb-6">
                 <!-- Account -->
@@ -87,8 +75,6 @@
                     <form id="formAccountSettings" method="POST" action="{{ route('employees.store') }}">
                         @csrf
 
-
-
                         <div class="row mt-1 g-5">
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
@@ -97,7 +83,7 @@
                                         value="{{ old('first_name') }}">
                                     <label for="firstName">First Name <span>*</span></label>
                                     @error('first_name')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -107,7 +93,7 @@
                                         name="last_name" id="lastName" value="{{ old('last_name') }}">
                                     <label for="lastName">Last Name</label>
                                     @error('last_name')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -119,7 +105,7 @@
                                         value="{{ old('date_of_joining') }}">
                                     <label for="date_of_joining">Date of Joining <span>*</span></label>
                                     @error('date_of_joining')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -130,16 +116,14 @@
                                         class="select2 form-select @error('employment_type_id') is-invalid @enderror">
                                         <option value="">Select Employment Type</option>
                                         @foreach($employeeTypes as $employeeType)
-                                        <option value="{{ $employeeType->id }}" {{
-                                            old('employment_type_id')==$employeeType->id ? 'selected' : ''
-                                            }}>
-                                            {{ $employeeType->name }}
-                                        </option>
+                                            <option value="{{ $employeeType->id }}" {{ old('employment_type_id') == $employeeType->id ? 'selected' : '' }}>
+                                                {{ $employeeType->name }}
+                                            </option>
                                         @endforeach
                                     </select>
                                     <label for="employment_type_id">Employment Type <span>*</span></label>
                                     @error('employment_type_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -150,15 +134,14 @@
                                         class="select2 form-select @error('department_id') is-invalid @enderror">
                                         <option value="">Select Department</option>
                                         @foreach($departments as $department)
-                                        <option value="{{ $department->id }}" {{ old('department_id')==$department->id ?
-                                            'selected' : '' }}>
-                                            {{ $department->name }}
-                                        </option>
+                                            <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                                                {{ $department->name }}
+                                            </option>
                                         @endforeach
                                     </select>
                                     <label for="department_id">Department <span>*</span></label>
                                     @error('department_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -172,7 +155,7 @@
 
                                     <label for="designation_id">Designation <span>*</span></label>
                                     @error('designation_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -193,36 +176,41 @@
 @endsection
 
 @push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    var old = @json(session()->getOldInput());
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        var old = @json(session()->getOldInput());
 
-$(document).ready(function () {
-    $('#department_id').on('change', function () {
-        let departmentId = $(this).val();
+        $(document).ready(function () {
+            // Trigger the change event on page load if there's a selected department
+            if ($('#department_id').val()) {
+                $('#department_id').trigger('change');
+            }
 
-        if (departmentId) {
-            $.ajax({
-                url: "{{ route('get.designations.by.department') }}",
-                type: "GET",
-                data: { department_id: departmentId },
-                success: function (data) {
-                    let options = '<option value="">Select Designation</option>';
-                    data.forEach(function (designation) {
-                        options += `<option value="${designation.id}" ${old && old['designation_id'] == designation.id ? 'selected' : ''}>
-                                        ${designation.name}
-                                    </option>`;
+            $('#department_id').on('change', function () {
+                let departmentId = $(this).val();
+
+                if (departmentId) {
+                    $.ajax({
+                        url: "{{ route('get.designations.by.department') }}",
+                        type: "GET",
+                        data: { department_id: departmentId },
+                        success: function (data) {
+                            let options = '<option value="">Select Designation</option>';
+                            data.forEach(function (designation) {
+                                options += `<option value="${designation.id}" ${old && old['designation_id'] == designation.id ? 'selected' : ''}>
+                                                ${designation.name}
+                                            </option>`;
+                            });
+                            $('#designation_id').html(options).trigger('change');
+                        },
+                        error: function () {
+                            alert('Failed to fetch designations.');
+                        }
                     });
-                    $('#designation_id').html(options).trigger('change');
-                },
-                error: function () {
-                    alert('Failed to fetch designations.');
+                } else {
+                    $('#designation_id').html('<option value="">Select Designation</option>').trigger('change');
                 }
             });
-        } else {
-            $('#designation_id').html('<option value="">Select Designation</option>').trigger('change');
-        }
-    });
-});
-</script>
+        });
+    </script>
 @endpush

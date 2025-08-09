@@ -7,6 +7,9 @@ use App\Models\Employee;
 interface EmployeeServiceInterface
 {
     public function getAllEmploymentTypes();
+
+    public function getAllEmployees();
+    public function getEmployeeStats();
     public function findEmployeeById(int $employeeId): ?Employee;
 
     public function createEmployee(EmployeeBasicInfoStoreRequet $request): Employee;

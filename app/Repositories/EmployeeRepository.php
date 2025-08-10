@@ -18,7 +18,7 @@ class EmployeeRepository implements EmployeeRepositoryInterface
 
     public function getAllEmployees()
     {
-        return Employee::paginate(10);
+        return Employee::orderBy('created_at','desc')->paginate(10);
     }
     public function getEmployeeStats()
     {

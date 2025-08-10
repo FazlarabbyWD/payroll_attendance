@@ -27,7 +27,7 @@
                             <div class="form-floating form-floating-outline">
                                 <input type="text" name="description"
                                     class="form-control @error('description') is-invalid @enderror" id="descriptionLarge"
-                                    placeholder="Door-1" value="{{ old('description') }}" required>
+                                    placeholder="Description" value="{{ old('description') }}" required>
                                 <label for="descriptionLarge">Description<span class="text-danger">**</span></label>
                                 @error('description')
                                 <small class="text-danger">{{ $message }}</small>

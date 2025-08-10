@@ -29,14 +29,13 @@ class EmployeeManageController extends Controller
     }
     public function index()
     {
-        $stats       = $this->employeeService->getEmployeeStats();
-        $departments = $this->departmentsService->getAllDepartments();
-        $bloodGroups = $this->departmentsService->getBloodGroup();
-        $employees   = $this->employeeService->getAllEmployees();
+        $stats           = $this->employeeService->getEmployeeStats();
+        $departments     = $this->departmentsService->getAllDepartments();
+        $bloodGroups     = $this->departmentsService->getBloodGroup();
+        $employees       = $this->employeeService->getAllEmployees();
+        $employmentTypes = $this->employeeService->getAllEmploymentTypes();
 
-        // dd($employees);
-
-        return view('employees.index', compact('stats', 'departments', 'bloodGroups','employees'));
+        return view('employees.index', compact('stats', 'departments', 'bloodGroups', 'employees','employmentTypes'));
     }
 
     public function create()

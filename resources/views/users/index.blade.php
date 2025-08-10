@@ -130,6 +130,8 @@
         }
 
 
+
+
         
          // Get references to the input and select elements
         const nameSearchInput = document.getElementById('nameSearchInput');

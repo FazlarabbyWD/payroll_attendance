@@ -181,7 +181,7 @@
         var old = @json(session()->getOldInput());
 
         $(document).ready(function () {
-            // Trigger the change event on page load if there's a selected department
+          
             if ($('#department_id').val()) {
                 $('#department_id').trigger('change');
             }

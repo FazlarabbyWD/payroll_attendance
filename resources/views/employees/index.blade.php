@@ -129,12 +129,11 @@
                         </span>
                     </a>
                 </div>
-
             </div>
 
             <div class="d-flex justify-content-between align-items-center row pt-4 pb-2 gap-4 gap-md-0 gx-5">
                 <div class="col-md-4 employee_dept">
-                    <select id="EMployeeDept" class="form-select text-capitalize">
+                    <select id="EmployeeDept" class="form-select text-capitalize" name="department_id">
                         <option value="">Select Department</option>
                         @foreach ($departments as $department)
                         <option value="{{ $department->id }}">{{ ucfirst($department->name) }}</option>
@@ -142,18 +141,17 @@
                     </select>
                 </div>
 
-                <div class="col-md-4 employee_desgn">
-                    <select id="EmployeeDesgn" class="form-select text-capitalize">
-                        <option value="">Select Designation</option>
-                        <option value="Software_engineer">Software Engineer</option>
-                        <option value="cfo">CFO</option>
-                        <option value="cto">CTO</option>
+                <div class="col-md-4 employment_type">
+                    <select id="EMploymentType" class="form-select text-capitalize" name="employment_type_id">
+                        <option value="">Employment Type</option>
+                        @foreach ($employmentTypes as $employmentType)
+                        <option value="{{ $employmentType->id }}">{{ ucfirst($employmentType->name) }}</option>
+                        @endforeach
                     </select>
                 </div>
 
-
                 <div class="col-md-4 employee_blood_group">
-                    <select id="EmployeeBlood" class="form-select text-capitalize">
+                    <select id="EmployeeBlood" class="form-select text-capitalize" name="blood_group_id">
                         <option value="">Select Blood Group</option>
                         @foreach ($bloodGroups as $bloodGroup )
                         <option value="{{ $bloodGroup->id }}">{{ ucfirst($bloodGroup->name) }}</option>
@@ -163,31 +161,28 @@
             </div>
         </div>
 
-
-
-
         <div class="card-datatable">
             <div id="DataTables_Table_0_wrapper" class="dt-container dt-bootstrap5 dt-empty-footer">
 
                 <div class="row m-2 my-0 mt-2 mb-2 justify-content-between align-items-center">
                     <div class="col d-flex flex-wrap align-items-center gap-2">
                         <div>
-                            <input type="search" class="form-control form-control-sm" id="dt-search-0"
+                            <input type="search" class="form-control form-control-sm" id="employeeIdSearchInput"
                                 placeholder="Employee ID">
                         </div>
 
                         <div>
-                            <input type="search" class="form-control form-control-sm" id="dt-search-0"
+                            <input type="text" class="form-control form-control-sm" id="nameSearchInput"
                                 placeholder="Name">
                         </div>
 
                         <div>
-                            <input type="search" class="form-control form-control-sm" id="dt-search-1"
+                            <input type="search" class="form-control form-control-sm" id="phoneSearchInput"
                                 placeholder="Phone">
                         </div>
 
                         <div>
-                            <input type="search" class="form-control form-control-sm" id="dt-search-2"
+                            <input type="search" class="form-control form-control-sm" id="emailSearchInput"
                                 placeholder="Email">
                         </div>
 
@@ -212,14 +207,22 @@
                         <table class="datatables-users table dataTable dtr-column table-responsive"
                             id="DataTables_Table_0" aria-describedby="DataTables_Table_0_info" style="width: 100%;">
                             <colgroup>
-                                <col style="width: 80px;"> <!-- EMP ID -->
-                                <col style="width: 150px;"> <!-- NAME -->
-                                <col style="width: 120px;"> <!-- DEPARTMENT -->
-                                <col style="width: 150px;"> <!-- DESIGNATION -->
-                                <col style="width: 100px;"> <!-- PHONE -->
-                                <col style="width: 80px;"> <!-- BLOOD GROUP -->
-                                <col style="width: 80px;"> <!-- STATUS -->
-                                <col style="width: 120px;"> <!-- ACTION -->
+                                <col style="width: 80px;">
+                                <!-- EMP ID -->
+                                <col style="width: 150px;">
+                                <!-- NAME -->
+                                <col style="width: 120px;">
+                                <!-- DEPARTMENT -->
+                                <col style="width: 150px;">
+                                <!-- DESIGNATION -->
+                                <col style="width: 100px;">
+                                <!-- PHONE -->
+                                <col style="width: 80px;">
+                                <!-- BLOOD GROUP -->
+                                <col style="width: 80px;">
+                                <!-- STATUS -->
+                                <col style="width: 120px;">
+                                <!-- ACTION -->
                             </colgroup>
                             <thead>
                                 <tr>
@@ -283,12 +286,11 @@
                                     <td>{{ $employee->bloodGroup->name ?? 'N/A' }}</td>
                                     <!-- Assuming you have a BloodGroup relationship -->
                                     <td>
-                                        <span
-                                            class="badge rounded-pill bg-label-{{ $employee->employment_status_id ? 'success' : 'danger' }}"
-                                            text-capitalized="">
-                                            {{ $employee->employment_status_id ? 'Active' : 'Inactive' }}
+                                        <span class="badge rounded-pill bg-label-info">
+                                            {{ $employee->employmentStatus->name }}
                                         </span>
                                     </td>
+
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <a href="javascript:;"
@@ -323,50 +325,92 @@
                     <div
                         class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto mt-md-0 mt-5">
                         <div class="dt-info" aria-live="polite" id="DataTables_Table_0_info" role="status">Showing
-                            1 to
-                            10 of 50 entries</div>
+                            {{ $employees->firstItem() }} to
+                            {{ $employees->lastItem() }} of
+                            {{ $employees->total() }} entries
+                        </div>
                     </div>
                     <div
                         class="d-md-flex align-items-center dt-layout-end col-md-auto ms-auto d-flex gap-md-4 justify-content-md-between justify-content-center gap-md-2 flex-wrap mt-0">
                         <div class="dt-paging">
                             <nav aria-label="pagination">
                                 <ul class="pagination">
-                                    <li class="dt-paging-button page-item disabled"><button class="page-link first"
-                                            role="link" type="button" aria-controls="DataTables_Table_0"
-                                            aria-disabled="true" aria-label="First" data-dt-idx="first" tabindex="-1"><i
-                                                class="icon-base ri ri-skip-back-mini-line scaleX-n1-rtl icon-22px"></i></button>
+                                    {{-- Previous Page Link --}}
+                                    @if ($employees->onFirstPage())
+                                    <li class="dt-paging-button page-item disabled">
+                                        <button class="page-link first" role="link" type="button" disabled
+                                            aria-disabled="true" aria-label="First" data-dt-idx="first" tabindex="-1">
+                                            <i class="icon-base ri ri-skip-back-mini-line scaleX-n1-rtl icon-22px"></i>
+                                        </button>
                                     </li>
-                                    <li class="dt-paging-button page-item disabled"><button class="page-link previous"
-                                            role="link" type="button" aria-controls="DataTables_Table_0"
+                                    <li class="dt-paging-button page-item disabled">
+                                        <button class="page-link previous" role="link" type="button" disabled
                                             aria-disabled="true" aria-label="Previous" data-dt-idx="previous"
-                                            tabindex="-1"><i
-                                                class="icon-base ri ri-arrow-left-s-line scaleX-n1-rtl icon-22px"></i></button>
+                                            tabindex="-1">
+                                            <i class="icon-base ri ri-arrow-left-s-line scaleX-n1-rtl icon-22px"></i>
+                                        </button>
                                     </li>
-                                    <li class="dt-paging-button page-item active"><button class="page-link" role="link"
-                                            type="button" aria-controls="DataTables_Table_0" aria-current="page"
-                                            data-dt-idx="0">1</button></li>
-                                    <li class="dt-paging-button page-item"><button class="page-link" role="link"
-                                            type="button" aria-controls="DataTables_Table_0" data-dt-idx="1">2</button>
+                                    @else
+                                    <li class="dt-paging-button page-item">
+                                        <a class="page-link first" href="{{ $employees->url(1) }}" rel="prev"
+                                            aria-label="First">
+                                            <i class="icon-base ri ri-skip-back-mini-line scaleX-n1-rtl icon-22px"></i>
+                                        </a>
                                     </li>
-                                    <li class="dt-paging-button page-item"><button class="page-link" role="link"
-                                            type="button" aria-controls="DataTables_Table_0" data-dt-idx="2">3</button>
+                                    <li class="dt-paging-button page-item">
+                                        <a class="page-link previous" href="{{ $employees->previousPageUrl() }}"
+                                            rel="prev" aria-label="Previous">
+                                            <i class="icon-base ri ri-arrow-left-s-line scaleX-n1-rtl icon-22px"></i>
+                                        </a>
                                     </li>
-                                    <li class="dt-paging-button page-item"><button class="page-link" role="link"
-                                            type="button" aria-controls="DataTables_Table_0" data-dt-idx="3">4</button>
+                                    @endif
+
+                                    {{-- Pagination Elements --}}
+                                    @foreach ($employees->getUrlRange(max(1, $employees->currentPage() - 2),
+                                    min($employees->lastPage(), $employees->currentPage() + 2)) as $page => $url)
+                                    @if ($page == $employees->currentPage())
+                                    <li class="dt-paging-button page-item active">
+                                        <button class="page-link" role="link" type="button" aria-current="page"
+                                            data-dt-idx="{{ $page - 1 }}">{{ $page }}</button>
                                     </li>
-                                    <li class="dt-paging-button page-item"><button class="page-link" role="link"
-                                            type="button" aria-controls="DataTables_Table_0" data-dt-idx="4">5</button>
+                                    @else
+                                    <li class="dt-paging-button page-item">
+                                        <a class="page-link" href="{{ $url }}" data-dt-idx="{{ $page - 1 }}">{{ $page
+                                            }}</a>
                                     </li>
-                                    <li class="dt-paging-button page-item"><button class="page-link next" role="link"
-                                            type="button" aria-controls="DataTables_Table_0" aria-label="Next"
-                                            data-dt-idx="next"><i
-                                                class="icon-base ri ri-arrow-right-s-line scaleX-n1-rtl icon-22px"></i></button>
+                                    @endif
+                                    @endforeach
+
+                                    {{-- Next Page Link --}}
+                                    @if ($employees->hasMorePages())
+                                    <li class="dt-paging-button page-item">
+                                        <a class="page-link next" href="{{ $employees->nextPageUrl() }}" rel="next"
+                                            aria-label="Next">
+                                            <i class="icon-base ri ri-arrow-right-s-line scaleX-n1-rtl icon-22px"></i>
+                                        </a>
                                     </li>
-                                    <li class="dt-paging-button page-item"><button class="page-link last" role="link"
-                                            type="button" aria-controls="DataTables_Table_0" aria-label="Last"
-                                            data-dt-idx="last"><i
-                                                class="icon-base ri ri-skip-forward-mini-line scaleX-n1-rtl icon-22px"></i></button>
+                                    <li class="dt-paging-button page-item">
+                                        <a class="page-link last" href="{{ $employees->url($employees->lastPage()) }}"
+                                            rel="next" aria-label="Last">
+                                            <i
+                                                class="icon-base ri ri-skip-forward-mini-line scaleX-n1-rtl icon-22px"></i>
+                                        </a>
                                     </li>
+                                    @else
+                                    <li class="dt-paging-button page-item disabled">
+                                        <button class="page-link next" role="link" type="button" disabled
+                                            aria-disabled="true" aria-label="Next" data-dt-idx="next">
+                                            <i class="icon-base ri ri-arrow-right-s-line scaleX-n1-rtl icon-22px"></i>
+                                        </button>
+                                    </li>
+                                    <li class="dt-paging-button page-item disabled">
+                                        <button class="page-link last" role="link" type="button" disabled
+                                            aria-disabled="true" aria-label="Last" data-dt-idx="last">
+                                            <i
+                                                class="icon-base ri ri-skip-forward-mini-line scaleX-n1-rtl icon-22px"></i>
+                                        </button>
+                                    </li>
+                                    @endif
                                 </ul>
                             </nav>
                         </div>
@@ -377,3 +421,87 @@
     </div>
 </div>
 @endsection
+
+
+
+
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Get references to the input and select elements
+        const employeeIdSearchInput = document.getElementById('employeeIdSearchInput');
+        const nameSearchInput = document.getElementById('nameSearchInput');
+        const phoneSearchInput = document.getElementById('phoneSearchInput');
+        const emailSearchInput = document.getElementById('emailSearchInput');
+        const statusFilter = document.getElementById('statusFilter');
+
+
+        // Get all the table rows
+        const tableRows = Array.from(document.querySelectorAll('table tbody tr'));
+
+        // Function to filter the table rows
+        function filterTable() {
+            const employeeIdSearchTerm = employeeIdSearchInput.value.toLowerCase();
+            const nameSearchTerm = nameSearchInput.value.toLowerCase();
+            const phoneSearchTerm = phoneSearchInput.value.toLowerCase();
+            const emailSearchTerm = emailSearchInput.value.toLowerCase();
+            const statusValue = statusFilter.value;
+
+
+
+            tableRows.forEach(row => {
+                // Get the data from the row. Adjust indices based on actual table structure!
+                const employeeId = row.cells[1].textContent.toLowerCase(); // EMP ID
+                const name = row.cells[2].querySelector('.fw-medium').textContent.toLowerCase(); // Name
+                const phone = row.cells[5].textContent.toLowerCase(); // Phone
+                const email = row.cells[2].querySelector('a').textContent.toLowerCase(); // Email, get from <a> tag
+                const statusText = row.cells[7].textContent.toLowerCase(); // Status text (Active/Inactive)
+
+
+                // Determine status value (1 for Active, 0 for Inactive)
+                let status = (statusText === 'active') ? '1' : '0';
+
+                // Check if the row matches the search term and status filter
+                const isEmployeeIdMatch = employeeId.includes(employeeIdSearchTerm);
+                const isNameMatch = name.includes(nameSearchTerm);
+                const isPhoneMatch = phone.includes(phoneSearchTerm);
+                const isEmailMatch = emailSearchTerm.includes(emailSearchTerm);
+                const isStatusMatch = statusValue === "" || status === statusValue;
+
+                // Show or hide the row based on whether it matches the search term and status filter
+                if (isEmployeeIdMatch && isNameMatch && isPhoneMatch && isEmailMatch && isStatusMatch ) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+        // Function to reset the filter
+        function resetFilter() {
+            employeeIdSearchInput.value = "";
+            nameSearchInput.value = "";
+            phoneSearchInput.value = "";
+            emailSearchInput.value = "";
+            statusFilter.value = "";
+
+            filterTable();
+        }
+
+
+        // Attach event listeners to the input and select elements
+        employeeIdSearchInput.addEventListener('input', filterTable);
+        nameSearchInput.addEventListener('input', filterTable);
+        phoneSearchInput.addEventListener('input', filterTable);
+        emailSearchInput.addEventListener('input', filterTable);
+        statusFilter.addEventListener('change', filterTable);
+
+
+        // Get reference to the reset button and attach event listener
+        const resetButton = document.getElementById('resetButton');
+        resetButton.addEventListener('click', resetFilter);
+    });
+</script>
+@endpush

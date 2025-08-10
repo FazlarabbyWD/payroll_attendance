@@ -38,6 +38,12 @@ class Employee extends Model
         'resigned_at'     => 'date',
     ];
 
+     public function employmentStatus()
+    {
+        return $this->belongsTo(EmploymentStatus::class);
+    }
+
+
     /* Relationships */
     public function department()
     {
@@ -49,10 +55,6 @@ class Employee extends Model
         return $this->belongsTo(Designation::class);
     }
 
-    public function employmentStatus()
-    {
-        return $this->belongsTo(EmploymentStatus::class);
-    }
 
     public function employmentType()
     {

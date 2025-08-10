@@ -18,7 +18,7 @@ class EmployeeRepository implements EmployeeRepositoryInterface
 
     public function getAllEmployees()
     {
-        return Employee::all();
+        return Employee::paginate(10);
     }
     public function getEmployeeStats()
     {

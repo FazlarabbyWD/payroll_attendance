@@ -33,4 +33,5 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('employee/{employee}/update/personal-info', [EmployeeManageController::class, 'storePersonalAddressInfo'])->name('employees.personal-info.store');
 
     Route::get('/employees/{employee}/address', [EmployeeManageController::class, 'getAddress'])->name('employees.address');
+    Route::post('/employees/{employee}/address', [EmployeeManageController::class, 'storeAddress'])->name('employees.address.store');
 });

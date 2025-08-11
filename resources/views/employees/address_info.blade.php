@@ -1,3 +1,5 @@
+{{-- @dd($current); --}}
+
 @extends('app')
 @section('main-content')
 <div class="container-xxl flex-grow-1 container-p-y">
@@ -80,23 +82,21 @@
                     </div>
                 </div>
 
-
                 <div class="col-md-8">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                         <!-- Left: Navigation Pills -->
                         <ul class="nav nav-pills flex-row">
 
                             <li class="nav-item">
-                                <a class="nav-link active waves-effect waves-light" href="javascript:void(0);">
-                                    <i class="icon-base ri ri-link-m icon-sm me-1_5"></i>Personal Info
+                                <a class="nav-link waves-effect waves-light"
+                                    href="{{ route('employees.personal-info',$employee) }}">
+                                    <i class="icon-base ri ri-bookmark-line icon-sm me-1_5"></i>Personal Info
                                 </a>
                             </li>
 
-
                             <li class="nav-item">
-                                <a class="nav-link waves-effect waves-light"
-                                    href="{{ route('employees.address',$employee) }}">
-                                    <i class="icon-base ri ri-bookmark-line icon-sm me-1_5"></i>Address
+                                <a class="nav-link active waves-effect waves-light" href="javascript:void(0);">
+                                    <i class="icon-base ri ri-link-m icon-sm me-1_5"></i>Address
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -105,7 +105,6 @@
                                     <i class="menu-icon icon-base ri ri-bill-line"></i>Education
                                 </a>
                             </li>
-
                             <li class="nav-item">
                                 <a class="nav-link waves-effect waves-light"
                                     href="pages-account-settings-notifications.html">
@@ -119,43 +118,26 @@
                                 <span class="d-none d-sm-inline-block">Employee List</span>
                             </a>
                         </div>
-
                     </div>
                     <div class="card mb-6">
                         <div class="card-body pt-0">
-                            <form id="formPersonalInfo" method="POST"
-                                action="{{ route('employees.personal-info.store',$employee) }}">
+                            <form id="formAddressInfo" method="POST"
+                                action="{{ route('employees.address.store', $employee) }}">
                                 @csrf
                                 <div class="row mt-1 g-5">
+
                                     <div class="col-md-6 form-control-validation">
                                         <div class="form-floating form-floating-outline">
-                                            <input class="form-control @error('phone_no') is-invalid @enderror"
-                                                type="text" id="phone_no" name="phone_no"
-                                                value="{{ old('phone_no') ?? $employee->phone_no ?? '' }}">
-                                            <label for="phone_no">Phone Number <span>*</span></label>
-                                            @error('phone_no')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 form-control-validation">
-                                        <div class="form-floating form-floating-outline">
-                                            <input class="form-control @error('email') is-invalid @enderror"
-                                                type="email" name="email" id="email"
-                                                value="{{ old('email') ?? $employee->email ?? '' }}">
-                                            <label for="email">Email </label>
-                                            @error('email')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 form-control-validation">
-                                        <div class="form-floating form-floating-outline">
-                                            <input class="form-control @error('date_of_birth') is-invalid @enderror"
-                                                type="date" name="date_of_birth" id="date_of_birth"
-                                                value="{{ old('date_of_birth') ?? ($employee->date_of_birth ? $employee->date_of_birth->format('Y-m-d') : '') }}">
-                                            <label for="date_of_birth">Date of Birth <span>*</span></label>
-                                            @error('date_of_birth')
+                                            <select id="type" name="type"
+                                                class="select2 form-select @error('type') is-invalid @enderror">
+                                                <option value="current" {{ old('type')=='current' ? 'selected' : '' }}>
+                                                    Current</option>
+                                                <option value="permanent" {{ old('type')=='permanent' ? 'selected' : ''
+                                                    }}>Permanent</option>
+                                            </select>
+
+                                            <label for="type">Address Type <span>*</span></label>
+                                            @error('type')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
@@ -163,97 +145,74 @@
 
                                     <div class="col-md-6 form-control-validation">
                                         <div class="form-floating form-floating-outline">
-                                            <select id="gender_id" name="gender_id"
-                                                class="select2 form-select @error('gender_id') is-invalid @enderror">
-                                                <option value="">Select Gender</option>
-                                                @foreach($genders as $gender)
-                                                <option value="{{ $gender->id }}" {{ old('gender_id', $employee->
-                                                    gender_id ?? '')==$gender->id ? 'selected'
-                                                    : '' }}>{{ $gender->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            <label for="gender_id">Gender <span>*</span></label>
-                                            @error('gender_id')
+                                            <input class="form-control @error('country') is-invalid @enderror"
+                                                type="text" id="country" name="country"
+                                                value="{{ old('country', request('type') == 'permanent' ? ($permanent->country ?? '') : ($current->country ?? '')) }}">
+
+                                            <label for="country">Country <span>*</span></label>
+                                            @error('country')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
-                                    </div>
-                                    <div class="col-md-6 form-control-validation">
-                                        <div class="form-floating form-floating-outline">
-                                            <select id="religion_id" name="religion_id"
-                                                class="select2 form-select @error('religion_id') is-invalid @enderror">
-                                                <option value="">Select Religion</option>
-                                                @foreach($religions as $religion)
-                                                <option value="{{ $religion->id }}" {{ old('religion_id', $employee->
-                                                    religion_id ?? '')==$religion->id ?
-                                                    'selected' : '' }}>{{ $religion->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            <label for="religion_id">Religion <span>*</span></label>
-                                            @error('religion_id')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 form-control-validation">
-                                        <div class="form-floating form-floating-outline">
-                                            <select id="marital_status_id" name="marital_status_id"
-                                                class="select2 form-select @error('marital_status_id') is-invalid @enderror">
-                                                <option value="">Select Marital Status</option>
-                                                @foreach($maritalStatuses as $maritalStatus)
-                                                <option value="{{ $maritalStatus->id }}" {{ old('marital_status_id',
-                                                    $employee->marital_status_id ??
-                                                    '')==$maritalStatus->id ? 'selected' : '' }}>{{
-                                                    $maritalStatus->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            <label for="marital_status_id">Marital Status <span>*</span></label>
-                                            @error('marital_status_id')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 form-control-validation">
-                                        <div class="form-floating form-floating-outline">
-                                            <select id="blood_group_id" name="blood_group_id"
-                                                class="select2 form-select @error('blood_group_id') is-invalid @enderror">
-                                                <option value="">Select Blood Group</option>
-                                                @foreach($bloodGroups as $bloodGroup)
-                                                <option value="{{ $bloodGroup->id }}" {{ old('blood_group_id',
-                                                    $employee->blood_group_id ?? '')==$bloodGroup->id
-                                                    ? 'selected' : '' }}>{{ $bloodGroup->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            <label for="blood_group_id">Blood Group <span>*</span></label>
-                                            @error('blood_group_id')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 form-control-validation">
-                                        <div class="form-floating form-floating-outline">
-                                            <input class="form-control @error('national_id') is-invalid @enderror"
-                                                type="text" id="national_id" name="national_id"
-                                                value="{{ old('national_id') ?? $employee->national_id ?? '' }}">
-                                            <label for="national_id">National ID <span>*</span></label>
-                                            @error('national_id')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="mt-6">
-                                        @if(!is_null($employee->phone_no))
-                                        <button type="submit" class="btn btn-primary me-3 waves-effect waves-light">
-                                            Update Info
-                                        </button>
-                                        @else
-                                        <button type="submit" class="btn btn-primary me-3 waves-effect waves-light">
-                                            Save Info
-                                        </button>
-                                        @endif
                                     </div>
 
+
+                                    <div class="col-md-6 form-control-validation">
+                                        <div class="form-floating form-floating-outline">
+                                            <input class="form-control @error('state') is-invalid @enderror" type="text"
+                                                id="state" name="state">
+                                            <label for="state">State <span>*</span></label>
+                                            @error('state')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 form-control-validation">
+                                        <div class="form-floating form-floating-outline">
+                                            <input class="form-control @error('city') is-invalid @enderror" type="text"
+                                                id="city" name="city">
+                                            <label for="city">City <span>*</span></label>
+                                            @error('city')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 form-control-validation">
+                                        <div class="form-floating form-floating-outline">
+                                            <input class="form-control @error('postal_code') is-invalid @enderror"
+                                                type="text" id="postal_code" name="postal_code">
+                                            <label for="postal_code">Postal Code <span>*</span></label>
+                                            @error('postal_code')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 form-control-validation">
+                                        <div class="form-floating form-floating-outline">
+                                            <textarea class="form-control @error('address') is-invalid @enderror"
+                                                id="address" name="address" rows="3"></textarea>
+                                            <label for="address">Address <span>*</span></label>
+                                            @error('address')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
                                 </div>
+
+                                <div class="mt-6">
+                                    @if($current?->country || $permanent?->country)
+                                    <button type="submit" class="btn btn-primary me-3 waves-effect waves-light">
+                                        Update Address
+                                    </button>
+                                    @else
+                                    <button type="submit" class="btn btn-primary me-3 waves-effect waves-light">
+                                        Save Address
+                                    </button>
+                                    @endif
+                                </div>
+
                             </form>
                         </div>
                     </div>
@@ -263,3 +222,28 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+
+<script>
+    const addresses = {
+        current: @json($current),
+        permanent: @json($permanent)
+    };
+
+    document.getElementById('type').addEventListener('change', function () {
+        let type = this.value;
+        let addr = addresses[type] || {};
+
+        document.getElementById('country').value     = addr.country     || '';
+        document.getElementById('state').value       = addr.state       || '';
+        document.getElementById('city').value        = addr.city        || '';
+        document.getElementById('postal_code').value = addr.postal_code || '';
+        document.getElementById('address').value     = addr.address     || '';
+    });
+
+    // Trigger once on page load
+    document.getElementById('type').dispatchEvent(new Event('change'));
+</script>
+
+@endpush

@@ -61,7 +61,7 @@
 
            <li class="menu-item {{ request()->is('employees*') ? 'open' : '' }}">
             <a href="#" class="menu-link menu-toggle">
-                <i class="icon-base ri ri-team-line icon-sm me-1_5"></i>
+                <i class="icon-base ri ri-group-line icon-sm me-1_5"></i>
                 <div data-i18n="Employee Settings">Employee Management</div>
             </a>
             <ul class="menu-sub">

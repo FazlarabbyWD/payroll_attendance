@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Employee;
 
 use Exception;
 use App\Models\Employee;
+use Illuminate\Http\Request;
 use App\Models\EmployeeAddress;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\DesgnByDept;
@@ -13,6 +14,7 @@ use App\Services\DepartmentServiceInterface;
 use App\Exceptions\EmployeeNotFoundException;
 use App\Services\DesignationServiceInterface;
 use Illuminate\Validation\ValidationException;
+use App\Http\Requests\EmployeeAddressStoreRequest;
 use App\Http\Requests\EmployeeBasicInfoStoreRequet;
 use App\Http\Requests\EmployeePersonalInfoStoreRequest;
 
@@ -134,28 +136,62 @@ class EmployeeManageController extends Controller
             $personalData = $request->all();
             $this->employeeService->addEmployeePersonalInfo($employee, $personalData);
 
-            return redirect()->back()->with('success', 'Info & Address saved successfully!');
+            return redirect()->back()->with('success', 'Info saved successfully!');
         } catch (Exception $e) {
 
-            $this->employeeStoreLog->error('Error saving personal/address information', [
+            $this->employeeStoreLog->error('Error saving personal information', [
                 'employee_id' => $employee->id,
                 'error'       => $e->getMessage(),
                 'trace'       => $e->getTraceAsString(),
             ]);
 
-            return redirect()->back()->with('error', 'Failed to save personal/address information. Please try again.');
+            return redirect()->back()->with('error', 'Failed to save personal information. Please try again.');
         }
     }
 
+    // public function getAddress(Employee $employee)
+    // {
+    //     $address = $employee->addresses;
+    //     $employeeCountry = $address->isNotEmpty() ? $address->first()->country : '';
+    //     $employeeState = $address->isNotEmpty() ? $address->first()->state : '';
+    //     $employeeCity = $address->isNotEmpty() ? $address->first()->city : '';
+    //     $employeePostalCode = $address->isNotEmpty() ? $address->first()->postal_code : '';
+    //     $employeeAddress = $address->isNotEmpty() ? $address->first()->address : '';
 
-    public function getAddress(Employee $employee): JsonResponse
-    {
-        $address = EmployeeAddress::where('employee_id', $employee->id)->first();
+    //     return view('employees.address_info',compact('employee','address','employeeCountry'));
+    // }
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $address ?? new EmployeeAddress()
-        ]);
+
+    public function getAddress(Employee $employee)
+{
+    $addresses = $employee->addresses->keyBy('type');
+
+    $permanent = $addresses->get('permanent');
+    $current   = $addresses->get('current');
+
+  
+    return view('employees.address_info', compact('employee', 'addresses', 'permanent', 'current'));
+}
+
+
+    public function storeAddress(EmployeeAddressStoreRequest $request,Employee $employee){
+
+          try {
+
+            $addressData = $request->all();
+            $this->employeeService->addEmployeeAddress($employee, $addressData);
+
+            return redirect()->back()->with('success', 'Address saved successfully!');
+        } catch (Exception $e) {
+
+            $this->employeeStoreLog->error('Error saving address information', [
+                'employee_id' => $employee->id,
+                'error'       => $e->getMessage(),
+                'trace'       => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->back()->with('error', 'Failed to save address information. Please try again.');
+        }
     }
 
 }

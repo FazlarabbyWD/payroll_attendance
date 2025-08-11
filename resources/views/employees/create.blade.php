@@ -6,27 +6,8 @@
     <div class="row">
         <div class="col-md-12">
 
-            {{-- Flash messages --}}
-            @if(session('success'))
-                <div class="alert alert-secondary alert-dismissible" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="alert alert-danger">{{ session('error') }}</div>
-            @endif
-
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            @include('components.alert', ['type' => 'success', 'message' => session('success')])
+            @include('components.alert', ['type' => 'danger', 'message' => session('error')])
 
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                 <!-- Left: Navigation Pills -->
@@ -83,7 +64,7 @@
                                         value="{{ old('first_name') }}">
                                     <label for="firstName">First Name <span>*</span></label>
                                     @error('first_name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -93,7 +74,7 @@
                                         name="last_name" id="lastName" value="{{ old('last_name') }}">
                                     <label for="lastName">Last Name</label>
                                     @error('last_name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -105,7 +86,7 @@
                                         value="{{ old('date_of_joining') }}">
                                     <label for="date_of_joining">Date of Joining <span>*</span></label>
                                     @error('date_of_joining')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -116,14 +97,15 @@
                                         class="select2 form-select @error('employment_type_id') is-invalid @enderror">
                                         <option value="">Select Employment Type</option>
                                         @foreach($employeeTypes as $employeeType)
-                                            <option value="{{ $employeeType->id }}" {{ old('employment_type_id') == $employeeType->id ? 'selected' : '' }}>
-                                                {{ $employeeType->name }}
-                                            </option>
+                                        <option value="{{ $employeeType->id }}" {{
+                                            old('employment_type_id')==$employeeType->id ? 'selected' : '' }}>
+                                            {{ $employeeType->name }}
+                                        </option>
                                         @endforeach
                                     </select>
                                     <label for="employment_type_id">Employment Type <span>*</span></label>
                                     @error('employment_type_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -134,14 +116,15 @@
                                         class="select2 form-select @error('department_id') is-invalid @enderror">
                                         <option value="">Select Department</option>
                                         @foreach($departments as $department)
-                                            <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>
-                                                {{ $department->name }}
-                                            </option>
+                                        <option value="{{ $department->id }}" {{ old('department_id')==$department->id ?
+                                            'selected' : '' }}>
+                                            {{ $department->name }}
+                                        </option>
                                         @endforeach
                                     </select>
                                     <label for="department_id">Department <span>*</span></label>
                                     @error('department_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -155,7 +138,7 @@
 
                                     <label for="designation_id">Designation <span>*</span></label>
                                     @error('designation_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
@@ -176,12 +159,12 @@
 @endsection
 
 @push('scripts')
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        var old = @json(session()->getOldInput());
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    var old = @json(session()->getOldInput());
 
         $(document).ready(function () {
-          
+
             if ($('#department_id').val()) {
                 $('#department_id').trigger('change');
             }
@@ -212,5 +195,5 @@
                 }
             });
         });
-    </script>
+</script>
 @endpush

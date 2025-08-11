@@ -9,7 +9,7 @@ interface EmployeeRepositoryInterface
     public function getAllEmployees();
     public function getAllEmploymentTypes();
     public function getEmployeeStats();
-    public function findEmployeeById(int $employeeId): ?Employee;
+    public function findEmployeeById($employee): ?Employee;
     public function createEmployee(array $data);
     public function updateEmployeeIdOnDevice($employee, $userid);
     public function addEmployeeAddress(Employee $employee, array $addressData);

@@ -21,7 +21,7 @@ class EmployeePersonalInfoStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'employee_id'       => 'required|integer|exists:employees,id',
+            // 'employee_id'       => 'required|integer|exists:employees,id',
             'phone_no'          => 'required|string|regex:/^01[3-9]\d{8}$/',
             'email'             => 'nullable|email|max:255',
             'date_of_birth'     => 'required|date|before:today',

@@ -1,26 +1,16 @@
+{{-- @dd($employee); --}}
 @extends('app')
 @section('main-content')
-
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="row">
         <div class="col-md-12">
-
-            {{-- Flash messages --}}
-            @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-            @if(session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-            @endif
-
+            @include('components.alert', ['type' => 'success', 'message' => session('success')])
+            @include('components.alert', ['type' => 'danger', 'message' => session('error')])
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                 <!-- Left: Navigation Pills -->
+                
                 <ul class="nav nav-pills flex-row">
-                    <li class="nav-item">
-                        <a class="nav-link waves-effect waves-light" href="{{ route('employees.create') }}">
-                            <i class="icon-base ri ri-group-line icon-sm me-1_5"></i>Employee
-                        </a>
-                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link active waves-effect waves-light" href="javascript:void(0);">
                             <i class="icon-base ri ri-link-m icon-sm me-1_5"></i>Personal Info
@@ -45,9 +35,9 @@
             <div class="card mb-6">
 
                 <div class="card-body pt-0">
-                    <form id="formPersonalInfo" method="POST" action="{{ route('employees.personal-info.store') }}">
+                    <form id="formPersonalInfo" method="POST"
+                        action="{{ route('employees.personal-info.store',$employee) }}">
                         @csrf
-                        <input type="hidden" name="employee_id" value="{{ $employeeId }}">
                         <div class="row mt-1 g-5">
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
@@ -61,83 +51,95 @@
                             </div>
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
-                                    <input class="form-control @error('email') is-invalid @enderror" type="email" name="email" id="email" value="{{ old('email') }}">
+                                    <input class="form-control @error('email') is-invalid @enderror" type="email"
+                                        name="email" id="email" value="{{ old('email') }}">
                                     <label for="email">Email </label>
-                                     @error('email')
+                                    @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
-                                    <input class="form-control @error('date_of_birth') is-invalid @enderror" type="date" name="date_of_birth" id="date_of_birth" value="{{ old('date_of_birth') }}">
+                                    <input class="form-control @error('date_of_birth') is-invalid @enderror" type="date"
+                                        name="date_of_birth" id="date_of_birth" value="{{ old('date_of_birth') }}">
                                     <label for="date_of_birth">Date of Birth <span>*</span></label>
-                                     @error('date_of_birth')
+                                    @error('date_of_birth')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
-                                    <select id="gender_id" name="gender_id" class="select2 form-select @error('gender_id') is-invalid @enderror">
+                                    <select id="gender_id" name="gender_id"
+                                        class="select2 form-select @error('gender_id') is-invalid @enderror">
                                         <option value="">Select Gender</option>
                                         @foreach($genders as $gender)
-                                        <option value="{{ $gender->id }}" {{ old('gender_id') == $gender->id ? 'selected' : '' }}>{{ $gender->name }}</option>
+                                        <option value="{{ $gender->id }}" {{ old('gender_id')==$gender->id ? 'selected'
+                                            : '' }}>{{ $gender->name }}</option>
                                         @endforeach
                                     </select>
                                     <label for="gender_id">Gender <span>*</span></label>
-                                     @error('gender_id')
+                                    @error('gender_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
-                                    <select id="religion_id" name="religion_id" class="select2 form-select @error('religion_id') is-invalid @enderror">
+                                    <select id="religion_id" name="religion_id"
+                                        class="select2 form-select @error('religion_id') is-invalid @enderror">
                                         <option value="">Select Religion</option>
                                         @foreach($religions as $religion)
-                                        <option value="{{ $religion->id }}" {{ old('religion_id') == $religion->id ? 'selected' : '' }}>{{ $religion->name }}</option>
+                                        <option value="{{ $religion->id }}" {{ old('religion_id')==$religion->id ?
+                                            'selected' : '' }}>{{ $religion->name }}</option>
                                         @endforeach
                                     </select>
                                     <label for="religion_id">Religion <span>*</span></label>
-                                     @error('religion_id')
+                                    @error('religion_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
-                                    <select id="marital_status_id" name="marital_status_id" class="select2 form-select @error('marital_status_id') is-invalid @enderror">
+                                    <select id="marital_status_id" name="marital_status_id"
+                                        class="select2 form-select @error('marital_status_id') is-invalid @enderror">
                                         <option value="">Select Marital Status</option>
                                         @foreach($maritalStatuses as $maritalStatus)
-                                        <option value="{{ $maritalStatus->id }}"  {{ old('marital_status_id') == $maritalStatus->id ? 'selected' : '' }}>{{ $maritalStatus->name }}</option>
+                                        <option value="{{ $maritalStatus->id }}" {{
+                                            old('marital_status_id')==$maritalStatus->id ? 'selected' : '' }}>{{
+                                            $maritalStatus->name }}</option>
                                         @endforeach
                                     </select>
                                     <label for="marital_status_id">Marital Status <span>*</span></label>
-                                     @error('marital_status_id')
+                                    @error('marital_status_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
-                                    <select id="blood_group_id" name="blood_group_id" class="select2 form-select @error('blood_group_id') is-invalid @enderror">
+                                    <select id="blood_group_id" name="blood_group_id"
+                                        class="select2 form-select @error('blood_group_id') is-invalid @enderror">
                                         <option value="">Select Blood Group</option>
                                         @foreach($bloodGroups as $bloodGroup)
-                                        <option value="{{ $bloodGroup->id }}" {{ old('blood_group_id') == $bloodGroup->id ? 'selected' : '' }}>{{ $bloodGroup->name }}</option>
+                                        <option value="{{ $bloodGroup->id }}" {{ old('blood_group_id')==$bloodGroup->id
+                                            ? 'selected' : '' }}>{{ $bloodGroup->name }}</option>
                                         @endforeach
                                     </select>
                                     <label for="blood_group_id">Blood Group <span>*</span></label>
-                                     @error('blood_group_id')
+                                    @error('blood_group_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
-                                    <input class="form-control @error('national_id') is-invalid @enderror" type="text" id="national_id" name="national_id" value="{{ old('national_id') }}">
+                                    <input class="form-control @error('national_id') is-invalid @enderror" type="text"
+                                        id="national_id" name="national_id" value="{{ old('national_id') }}">
                                     <label for="national_id">National ID <span>*</span></label>
-                                     @error('national_id')
+                                    @error('national_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -151,12 +153,15 @@
 
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
-                                    <select class="form-select @error('type') is-invalid @enderror" id="type" name="type">
-                                        <option value="current" {{ old('type') == 'current' ? 'selected' : '' }}>Current Address</option>
-                                        <option value="permanent" {{ old('type') == 'permanent' ? 'selected' : '' }}>Permanent Address</option>
+                                    <select class="form-select @error('type') is-invalid @enderror" id="type"
+                                        name="type">
+                                        <option value="current" {{ old('type')=='current' ? 'selected' : '' }}>Current
+                                            Address</option>
+                                        <option value="permanent" {{ old('type')=='permanent' ? 'selected' : '' }}>
+                                            Permanent Address</option>
                                     </select>
                                     <label for="type">Address Type <span>*</span></label>
-                                     @error('type')
+                                    @error('type')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -164,27 +169,30 @@
 
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
-                                    <input class="form-control @error('country') is-invalid @enderror" type="text" name="country" id="country" value="{{ old('country') }}">
+                                    <input class="form-control @error('country') is-invalid @enderror" type="text"
+                                        name="country" id="country" value="{{ old('country') }}">
                                     <label for="country">Country <span>*</span></label>
-                                     @error('country')
+                                    @error('country')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
-                                    <input class="form-control @error('state') is-invalid @enderror" type="text" name="state" id="state" value="{{ old('state') }}">
+                                    <input class="form-control @error('state') is-invalid @enderror" type="text"
+                                        name="state" id="state" value="{{ old('state') }}">
                                     <label for="state">State <span>*</span></label>
-                                     @error('state')
+                                    @error('state')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
-                                    <input class="form-control @error('city') is-invalid @enderror" type="text" name="city" id="city" value="{{ old('city') }}">
+                                    <input class="form-control @error('city') is-invalid @enderror" type="text"
+                                        name="city" id="city" value="{{ old('city') }}">
                                     <label for="city">City <span>*</span></label>
-                                     @error('city')
+                                    @error('city')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -192,9 +200,10 @@
 
                             <div class="col-md-6 form-control-validation">
                                 <div class="form-floating form-floating-outline">
-                                    <input class="form-control @error('postal_code') is-invalid @enderror" type="text" name="postal_code" id="postal_code" value="{{ old('postal_code') }}">
+                                    <input class="form-control @error('postal_code') is-invalid @enderror" type="text"
+                                        name="postal_code" id="postal_code" value="{{ old('postal_code') }}">
                                     <label for="postal_code">Postal Code <span>*</span></label>
-                                     @error('postal_code')
+                                    @error('postal_code')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -202,9 +211,10 @@
 
                             <div class="col-md-12 form-control-validation">
                                 <div class="form-floating form-floating-outline">
-                                    <textarea class="form-control @error('address') is-invalid @enderror" name="address" id="address" rows="3">{{ old('address') }}</textarea>
+                                    <textarea class="form-control @error('address') is-invalid @enderror" name="address"
+                                        id="address" rows="3">{{ old('address') }}</textarea>
                                     <label for="address">Details Address <span>*</span></label>
-                                     @error('address')
+                                    @error('address')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>

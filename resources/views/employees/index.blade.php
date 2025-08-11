@@ -7,15 +7,7 @@
     @include('components.alert', ['type' => 'success', 'message' => session('success')])
     @include('components.alert', ['type' => 'danger', 'message' => session('error')])
 
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+ 
     <div class="card">
     @include('employees._filters', ['departments' => $departments, 'employmentTypes' => $employmentTypes, 'bloodGroups' => $bloodGroups])
 

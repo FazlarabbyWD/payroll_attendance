@@ -40,9 +40,9 @@ class EmployeeService implements EmployeeServiceInterface
         return $this->employeeRepository->getAllEmployees();
     }
 
-    public function findEmployeeById(int $employeeId): ?Employee
+    public function findEmployeeById($employee): ?Employee
     {
-        return $this->employeeRepository->findEmployeeById($employeeId);
+        return $this->employeeRepository->findEmployeeById($employee);
     }
 
     public function getEmployeeStats()

@@ -1,16 +1,18 @@
 <?php
 namespace App\Http\Controllers\Employee;
 
-use App\Http\Controllers\Controller;
+use Exception;
+use App\Models\Employee;
 use App\Http\Requests\DesgnByDept;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use App\Services\EmployeeServiceInterface;
+use App\Services\DepartmentServiceInterface;
+use App\Exceptions\EmployeeNotFoundException;
+use App\Services\DesignationServiceInterface;
+use Illuminate\Validation\ValidationException;
 use App\Http\Requests\EmployeeBasicInfoStoreRequet;
 use App\Http\Requests\EmployeePersonalInfoStoreRequest;
-use App\Services\DepartmentServiceInterface;
-use App\Services\DesignationServiceInterface;
-use App\Services\EmployeeServiceInterface;
-use Exception;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
 
 class EmployeeManageController extends Controller
 {
@@ -35,7 +37,7 @@ class EmployeeManageController extends Controller
         $employees       = $this->employeeService->getAllEmployees();
         $employmentTypes = $this->employeeService->getAllEmploymentTypes();
 
-        return view('employees.index', compact('stats', 'departments', 'bloodGroups', 'employees','employmentTypes'));
+        return view('employees.index', compact('stats', 'departments', 'bloodGroups', 'employees', 'employmentTypes'));
     }
 
     public function create()
@@ -78,19 +80,40 @@ class EmployeeManageController extends Controller
         }
     }
 
-    public function showPersonalInfoForm()
+    public function edit(Employee $employee)
     {
-        $employeeId = session('employee_id');
-        if (! $employeeId) {
-            return redirect()->route('employees.create')->with('error', 'Please create employee first.');
-        }
+        try {
+            $designations  = $this->designationService->getAllDesignations();
+            $departments   = $this->departmentsService->getAllDepartments();
+            $employeeTypes = $this->employeeService->getAllEmploymentTypes();
 
+            return view('employees.edit', compact('employee','designations','departments','employeeTypes'));
+
+        } catch (EmployeeNotFoundException $e) {
+            return redirect()->route('employees.index')->withErrors([
+                'error' => $e->getMessage(),
+            ]);
+
+        } catch (Exception $e) {
+            $this->employeeStoreLog->error("Failed to retrieve Employee for Update Info", [
+                'employee_id'   => $employee->id,
+                'error_message' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('employees.index')->withErrors([
+                'error' => 'Failed to retrieve Employee for Update Info: ' . $e->getMessage(),
+            ]);
+        }
+    }
+
+    public function showPersonalInfoForm(Employee $employee)
+    {
         $genders         = $this->departmentsService->getGender();
         $religions       = $this->departmentsService->getReligion();
         $maritalStatuses = $this->departmentsService->getMaritalStatus();
         $bloodGroups     = $this->departmentsService->getBloodGroup();
 
-        return view('employees.personal_info', compact('employeeId', 'genders', 'religions', 'maritalStatuses', 'bloodGroups'));
+        return view('employees.personal_info', compact('employee', 'genders', 'religions', 'maritalStatuses', 'bloodGroups'));
     }
 
     public function getDesignationsByDepartment(DesgnByDept $request)
@@ -102,24 +125,9 @@ class EmployeeManageController extends Controller
         return response()->json($designations);
     }
 
-    public function storePersonalAddressInfo(EmployeePersonalInfoStoreRequest $request)
+    public function storePersonalAddressInfo(EmployeePersonalInfoStoreRequest $request,Employee $employee)
     {
-        $employeeId = session('employee_id');
-        if (! $employeeId) {
-            return redirect()
-                ->route('employees.create')
-                ->with('error', 'Please create employee first.');
-        }
-
-        $employee = $this->employeeService->findEmployeeById($employeeId);
-        if (! $employee) {
-            return redirect()
-                ->route('employees.create')
-                ->with('error', 'Employee not found.');
-        }
-
         try {
-            // Separate data for personal info and address
             $personalData = $request->only([
                 'phone_no',
                 'email',
@@ -140,14 +148,13 @@ class EmployeeManageController extends Controller
                 'address',
             ]);
 
-            // Call service method (handles transaction)
             $this->employeeService->savePersonalAndAddress($employee, $personalData, $addressData);
 
             return redirect()->back()->with('success', 'Info & Address saved successfully!');
         } catch (Exception $e) {
 
             $this->employeeStoreLog->error('Error saving personal/address information', [
-                'employee_id' => $employeeId,
+                'employee_id' => $employee->id,
                 'error'       => $e->getMessage(),
                 'trace'       => $e->getTraceAsString(),
             ]);

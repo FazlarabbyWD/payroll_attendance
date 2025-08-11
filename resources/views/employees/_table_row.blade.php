@@ -47,8 +47,9 @@
                 <i class="icon-base ri ri-more-2-line icon-md"></i>
             </a>
             <div class="dropdown-menu dropdown-menu-end m-0">
-                <a href="javascript:;" class="dropdown-item">Update Info</a>
-                {{-- <a href="javascript:;" class="dropdown-item">Suspend</a> --}}
+              <a href="{{ route('employees.personal-info',$employee) }}" class="dropdown-item">Update Info</a>
+
+                <a href="{{ route('employees.edit', $employee) }}" class="dropdown-item">Edit</a>
             </div>
         </div>
     </td>

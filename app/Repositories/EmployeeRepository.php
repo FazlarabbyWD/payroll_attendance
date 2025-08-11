@@ -34,9 +34,9 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         return EmploymentType::all();
     }
 
-    public function findEmployeeById(int $employeeId): ?Employee
+    public function findEmployeeById($employee): ?Employee
     {
-        return Employee::find($employeeId);
+        return Employee::find($employee);
     }
 
     public function createEmployee(array $data)

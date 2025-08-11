@@ -21,5 +21,4 @@ interface EmployeeServiceInterface
 
     public function addEmployeeAddress(Employee $employee, array $addressData): Employee;
 
-    public function savePersonalAndAddress(Employee $employee, array $personalData, array $addressData): Employee;
 }

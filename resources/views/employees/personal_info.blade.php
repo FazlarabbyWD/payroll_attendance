@@ -66,13 +66,13 @@
                                     <li class="mb-2">
                                         <span class="h6">Status:</span>
 
-                                             <span class="{{$btnClass}}"> {{
+                                        <span class="{{$btnClass}}"> {{
                                             $employee->employmentStatus->name }}</span>
                                     </li>
                                 </ul>
                                 <div class="d-flex justify-content-center">
                                     <a href="javascript:;" class="btn btn-primary me-4 waves-effect waves-light"
-                                        data-bs-target="#editUser" data-bs-toggle="modal">Edit</a>
+                                        data-bs-target="#editUser" data-bs-toggle="modal">Update</a>
                                     <a href="javascript:;"
                                         class="btn btn-outline-danger suspend-user waves-effect">Suspend</a>
                                 </div>
@@ -94,13 +94,13 @@
                             </li>
 
 
-                               <li class="nav-item">
+                            <li class="nav-item">
                                 <a class="nav-link waves-effect waves-light"
                                     href="pages-account-settings-notifications.html">
                                     <i class="icon-base ri ri-bookmark-line icon-sm me-1_5"></i>Address
                                 </a>
                             </li>
-                              <li class="nav-item">
+                            <li class="nav-item">
                                 <a class="nav-link waves-effect waves-light"
                                     href="pages-account-settings-notifications.html">
                                     <i class="menu-icon icon-base ri ri-bill-line"></i>Education
@@ -126,7 +126,7 @@
                                         <div class="form-floating form-floating-outline">
                                             <input class="form-control @error('phone_no') is-invalid @enderror"
                                                 type="text" id="phone_no" name="phone_no"
-                                                value="{{ old('phone_no') ?? $employee->personalInfo->phone_no ?? '' }}">
+                                                value="{{ old('phone_no') ?? $employee->phone_no ?? '' }}">
                                             <label for="phone_no">Phone Number <span>*</span></label>
                                             @error('phone_no')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -137,7 +137,7 @@
                                         <div class="form-floating form-floating-outline">
                                             <input class="form-control @error('email') is-invalid @enderror"
                                                 type="email" name="email" id="email"
-                                                value="{{ old('email') ?? $employee->personalInfo->email ?? '' }}">
+                                                value="{{ old('email') ?? $employee->email ?? '' }}">
                                             <label for="email">Email </label>
                                             @error('email')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -148,13 +148,14 @@
                                         <div class="form-floating form-floating-outline">
                                             <input class="form-control @error('date_of_birth') is-invalid @enderror"
                                                 type="date" name="date_of_birth" id="date_of_birth"
-                                                value="{{ old('date_of_birth')  ?? $employee->personalInfo->date_of_birth ?? '' }}">
+                                                value="{{ old('date_of_birth')  ?? ($employee->date_of_birth ?? '')->format('Y-m-d') }}">
                                             <label for="date_of_birth">Date of Birth <span>*</span></label>
                                             @error('date_of_birth')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
                                     </div>
+
                                     <div class="col-md-6 form-control-validation">
                                         <div class="form-floating form-floating-outline">
                                             <select id="gender_id" name="gender_id"
@@ -162,7 +163,7 @@
                                                 <option value="">Select Gender</option>
                                                 @foreach($genders as $gender)
                                                 <option value="{{ $gender->id }}" {{ old('gender_id', $employee->
-                                                    personalInfo->gender_id ?? '')==$gender->id ? 'selected'
+                                                    gender_id ?? '')==$gender->id ? 'selected'
                                                     : '' }}>{{ $gender->name }}</option>
                                                 @endforeach
                                             </select>
@@ -179,7 +180,7 @@
                                                 <option value="">Select Religion</option>
                                                 @foreach($religions as $religion)
                                                 <option value="{{ $religion->id }}" {{ old('religion_id', $employee->
-                                                    personalInfo->religion_id ?? '')==$religion->id ?
+                                                    religion_id ?? '')==$religion->id ?
                                                     'selected' : '' }}>{{ $religion->name }}</option>
                                                 @endforeach
                                             </select>
@@ -196,7 +197,7 @@
                                                 <option value="">Select Marital Status</option>
                                                 @foreach($maritalStatuses as $maritalStatus)
                                                 <option value="{{ $maritalStatus->id }}" {{ old('marital_status_id',
-                                                    $employee->personalInfo->marital_status_id ??
+                                                    $employee->marital_status_id ??
                                                     '')==$maritalStatus->id ? 'selected' : '' }}>{{
                                                     $maritalStatus->name }}</option>
                                                 @endforeach
@@ -214,7 +215,7 @@
                                                 <option value="">Select Blood Group</option>
                                                 @foreach($bloodGroups as $bloodGroup)
                                                 <option value="{{ $bloodGroup->id }}" {{ old('blood_group_id',
-                                                    $employee->personalInfo->blood_group_id ?? '')==$bloodGroup->id
+                                                    $employee->blood_group_id ?? '')==$bloodGroup->id
                                                     ? 'selected' : '' }}>{{ $bloodGroup->name }}</option>
                                                 @endforeach
                                             </select>
@@ -228,28 +229,31 @@
                                         <div class="form-floating form-floating-outline">
                                             <input class="form-control @error('national_id') is-invalid @enderror"
                                                 type="text" id="national_id" name="national_id"
-                                                value="{{ old('national_id') ?? $employee->personalInfo->national_id ?? '' }}">
+                                                value="{{ old('national_id') ?? $employee->national_id ?? '' }}">
                                             <label for="national_id">National ID <span>*</span></label>
                                             @error('national_id')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
                                     </div>
-
                                     <div class="mt-6">
-                                        <button type="submit" class="btn btn-primary me-3 waves-effect waves-light">Save
-                                            & Next</button>
-                                        <button type="reset"
-                                            class="btn btn-outline-secondary waves-effect">Reset</button>
+                                        @if(!is_null($employee->phone_no))
+                                        <button type="submit" class="btn btn-primary me-3 waves-effect waves-light">
+                                            Update
+                                        </button>
+                                        @else
+                                        <button type="submit" class="btn btn-primary me-3 waves-effect waves-light">
+                                            Save 
+                                        </button>
+                                        @endif
                                     </div>
+
                                 </div>
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
-
-
         </div>
     </div>
 </div>

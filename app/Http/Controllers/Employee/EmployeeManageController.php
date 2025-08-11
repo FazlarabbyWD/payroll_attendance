@@ -3,6 +3,8 @@ namespace App\Http\Controllers\Employee;
 
 use Exception;
 use App\Models\Employee;
+use App\Models\EmployeeAddress;
+use Illuminate\Http\JsonResponse;
 use App\Http\Requests\DesgnByDept;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
@@ -128,27 +130,9 @@ class EmployeeManageController extends Controller
     public function storePersonalAddressInfo(EmployeePersonalInfoStoreRequest $request,Employee $employee)
     {
         try {
-            $personalData = $request->only([
-                'phone_no',
-                'email',
-                'date_of_birth',
-                'gender_id',
-                'religion_id',
-                'marital_status_id',
-                'blood_group_id',
-                'national_id',
-            ]);
 
-            $addressData = $request->only([
-                'type',
-                'country',
-                'state',
-                'city',
-                'postal_code',
-                'address',
-            ]);
-
-            $this->employeeService->savePersonalAndAddress($employee, $personalData, $addressData);
+            $personalData = $request->all();
+            $this->employeeService->addEmployeePersonalInfo($employee, $personalData);
 
             return redirect()->back()->with('success', 'Info & Address saved successfully!');
         } catch (Exception $e) {
@@ -161,6 +145,17 @@ class EmployeeManageController extends Controller
 
             return redirect()->back()->with('error', 'Failed to save personal/address information. Please try again.');
         }
+    }
+
+
+    public function getAddress(Employee $employee): JsonResponse
+    {
+        $address = EmployeeAddress::where('employee_id', $employee->id)->first();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $address ?? new EmployeeAddress()
+        ]);
     }
 
 }

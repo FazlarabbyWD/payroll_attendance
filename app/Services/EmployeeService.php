@@ -239,14 +239,6 @@ class EmployeeService implements EmployeeServiceInterface
         }
     }
 
-    public function savePersonalAndAddress(Employee $employee, array $personalData, array $addressData): Employee
-    {
-        return DB::transaction(function () use ($employee, $personalData, $addressData) {
-            $this->addEmployeePersonalInfo($employee, $personalData);
-            $this->addEmployeeAddress($employee, $addressData);
-            return $employee;
-        });
-    }
 
     public function addEmployeePersonalInfo(Employee $employee, array $personalData): Employee
     {

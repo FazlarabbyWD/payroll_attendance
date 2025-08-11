@@ -21,7 +21,6 @@ class EmployeePersonalInfoStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 'employee_id'       => 'required|integer|exists:employees,id',
             'phone_no'          => 'required|string|regex:/^01[3-9]\d{8}$/',
             'email'             => 'nullable|email|max:255',
             'date_of_birth'     => 'required|date|before:today',
@@ -30,12 +29,6 @@ class EmployeePersonalInfoStoreRequest extends FormRequest
             'marital_status_id' => 'required|integer|exists:marital_statuses,id',
             'blood_group_id'    => 'required|integer|exists:blood_groups,id',
             'national_id'       => 'required|string|min:10|max:20',
-            'type'              => 'required|in:current,permanent',
-            'country'           => 'required|string|max:100',
-            'state'             => 'required|string|max:100',
-            'city'              => 'required|string|max:100',
-            'postal_code'       => 'required|string|max:10',
-            'address'           => 'required|string|min:5|max:1000',
         ];
     }
 
@@ -73,19 +66,6 @@ class EmployeePersonalInfoStoreRequest extends FormRequest
             'national_id.min'            => 'National ID must be at least 10 digits.',
             'national_id.max'            => 'National ID must not be more than 20 digits.',
 
-            'address_type.required'      => 'Address type is required.',
-            'address_type.in'            => 'Address type must be either current or permanent.',
-
-            'country.required'           => 'Country is required.',
-            'state.required'             => 'State is required.',
-            'city.required'              => 'City is required.',
-
-            'postal_code.required'       => 'Postal code is required.',
-            'postal_code.max'            => 'Postal code must not exceed 10 characters.',
-
-            'address.required'           => 'Address is required.',
-            'address.min'                => 'Address must be at least 5 characters long.',
-            'address.max'                => 'Address must not exceed 1000 characters.',
         ];
     }
 }

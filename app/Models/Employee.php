@@ -86,6 +86,11 @@ class Employee extends Model
         return $this->hasMany(EmployeeAddress::class);
     }
 
+     public function education()
+    {
+        return $this->hasMany(EmployeeEducation::class);
+    }
+
     public function currentAddress()
     {
         return $this->hasOne(EmployeeAddress::class)->where('type', 'current');

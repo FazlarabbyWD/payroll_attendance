@@ -101,7 +101,7 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link waves-effect waves-light"
-                                    href="pages-account-settings-notifications.html">
+                                    href="{{ route('employees.education',$employee) }}">
                                     <i class="menu-icon icon-base ri ri-bill-line"></i>Education
                                 </a>
                             </li>

@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Employee;
 use Exception;
 use App\Models\Employee;
 use Illuminate\Http\Request;
-use App\Models\EmployeeAddress;
-use Illuminate\Http\JsonResponse;
 use App\Http\Requests\DesgnByDept;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Services\EmployeeEducationService;
 use App\Services\EmployeeServiceInterface;
 use App\Services\DepartmentServiceInterface;
 use App\Exceptions\EmployeeNotFoundException;
@@ -16,6 +16,7 @@ use App\Services\DesignationServiceInterface;
 use Illuminate\Validation\ValidationException;
 use App\Http\Requests\EmployeeAddressStoreRequest;
 use App\Http\Requests\EmployeeBasicInfoStoreRequet;
+use App\Http\Requests\EmployeeEducationStoreRequest;
 use App\Http\Requests\EmployeePersonalInfoStoreRequest;
 
 class EmployeeManageController extends Controller
@@ -24,12 +25,14 @@ class EmployeeManageController extends Controller
     protected $departmentsService;
     protected $employeeService;
     protected $employeeStoreLog;
+    protected  $educationService;
 
-    public function __construct(DesignationServiceInterface $designationService, DepartmentServiceInterface $departmentsService, EmployeeServiceInterface $employeeService)
+    public function __construct(DesignationServiceInterface $designationService, DepartmentServiceInterface $departmentsService, EmployeeServiceInterface $employeeService,EmployeeEducationService $educationService)
     {
         $this->designationService = $designationService;
         $this->departmentsService = $departmentsService;
         $this->employeeService    = $employeeService;
+         $this->educationService = $educationService;
         $this->employeeStoreLog   = Log::channel('employeeStoreLog');
 
     }
@@ -91,7 +94,7 @@ class EmployeeManageController extends Controller
             $departments   = $this->departmentsService->getAllDepartments();
             $employeeTypes = $this->employeeService->getAllEmploymentTypes();
 
-            return view('employees.edit', compact('employee','designations','departments','employeeTypes'));
+            return view('employees.edit', compact('employee', 'designations', 'departments', 'employeeTypes'));
 
         } catch (EmployeeNotFoundException $e) {
             return redirect()->route('employees.index')->withErrors([
@@ -129,7 +132,7 @@ class EmployeeManageController extends Controller
         return response()->json($designations);
     }
 
-    public function storePersonalAddressInfo(EmployeePersonalInfoStoreRequest $request,Employee $employee)
+    public function storePersonalAddressInfo(EmployeePersonalInfoStoreRequest $request, Employee $employee)
     {
         try {
 
@@ -149,34 +152,20 @@ class EmployeeManageController extends Controller
         }
     }
 
-    // public function getAddress(Employee $employee)
-    // {
-    //     $address = $employee->addresses;
-    //     $employeeCountry = $address->isNotEmpty() ? $address->first()->country : '';
-    //     $employeeState = $address->isNotEmpty() ? $address->first()->state : '';
-    //     $employeeCity = $address->isNotEmpty() ? $address->first()->city : '';
-    //     $employeePostalCode = $address->isNotEmpty() ? $address->first()->postal_code : '';
-    //     $employeeAddress = $address->isNotEmpty() ? $address->first()->address : '';
-
-    //     return view('employees.address_info',compact('employee','address','employeeCountry'));
-    // }
-
-
     public function getAddress(Employee $employee)
-{
-    $addresses = $employee->addresses->keyBy('type');
+    {
+        $addresses = $employee->addresses->keyBy('type');
 
-    $permanent = $addresses->get('permanent');
-    $current   = $addresses->get('current');
+        $permanent = $addresses->get('permanent');
+        $current   = $addresses->get('current');
 
-  
-    return view('employees.address_info', compact('employee', 'addresses', 'permanent', 'current'));
-}
+        return view('employees.address_info', compact('employee', 'addresses', 'permanent', 'current'));
+    }
 
+    public function storeAddress(EmployeeAddressStoreRequest $request, Employee $employee)
+    {
 
-    public function storeAddress(EmployeeAddressStoreRequest $request,Employee $employee){
-
-          try {
+        try {
 
             $addressData = $request->all();
             $this->employeeService->addEmployeeAddress($employee, $addressData);
@@ -191,6 +180,32 @@ class EmployeeManageController extends Controller
             ]);
 
             return redirect()->back()->with('error', 'Failed to save address information. Please try again.');
+        }
+    }
+
+    public function getEducation(Employee $employee){
+
+        return view('employees.education_info',compact('employee'));
+    }
+
+
+    public function storeEducation(EmployeeEducationStoreRequest $request, Employee $employee)
+    {
+        try {
+            $validatedEducationData = $request->validated('education');
+
+            $this->educationService->syncEducation(
+                $employee,
+                $validatedEducationData,
+                Auth::id() // Pass the authenticated user's ID
+            );
+
+            return redirect()->back()->with('success', 'Employee education updated successfully!');
+
+        } catch (Exception $e) {
+
+            \Log::error('Error updating employee education: ' . $e->getMessage(), ['exception' => $e]);
+            return redirect()->back()->with('error', 'Failed to update employee education. Please try again.')->withInput();
         }
     }
 

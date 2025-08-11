@@ -7,6 +7,8 @@ use App\Repositories\DesignationRepository;
 use App\Repositories\DesignationRepositoryInterface;
 use App\Repositories\DeviceRepository;
 use App\Repositories\DeviceRepositoryInterface;
+use App\Repositories\EmployeeEducationRepository;
+use App\Repositories\EmployeeEducationRepositoryInterface;
 use App\Repositories\EmployeeRepository;
 use App\Repositories\EmployeeRepositoryInterface;
 use App\Repositories\UserRepository;
@@ -41,9 +43,11 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(DesignationRepositoryInterface::class, DesignationRepository::class);
         $this->app->bind(DesignationServiceInterface::class, DesignationService::class);
-        
+
         $this->app->bind(EmployeeRepositoryInterface::class, EmployeeRepository::class);
         $this->app->bind(EmployeeServiceInterface::class, EmployeeService::class);
+        $this->app->bind(EmployeeEducationRepositoryInterface::class,EmployeeEducationRepository::class
+        );
 
     }
 

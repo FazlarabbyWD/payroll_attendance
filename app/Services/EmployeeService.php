@@ -1,18 +1,20 @@
 <?php
 namespace App\Services;
 
-use App\Exceptions\EmployeeCreationException;
-use App\Http\Requests\EmployeeBasicInfoStoreRequet;
+use App\Models\Device;
 use App\Models\Employee;
-use App\Repositories\DepartmentRepositoryInterface;
-use App\Repositories\DeviceRepositoryInterface;
-use App\Repositories\EmployeeRepositoryInterface;
-use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Jmrashed\Zkteco\Lib\ZKTeco;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Database\QueryException;
+use App\Exceptions\EmployeeCreationException;
+use App\Repositories\DeviceRepositoryInterface;
+use App\Repositories\EmployeeRepositoryInterface;
+use App\Http\Requests\EmployeeBasicInfoStoreRequet;
+use App\Repositories\DepartmentRepositoryInterface;
 
 class EmployeeService implements EmployeeServiceInterface
 {
@@ -62,11 +64,11 @@ class EmployeeService implements EmployeeServiceInterface
     {
         return DB::transaction(function () use ($request) {
             $employee = $this->createEmployee($request);
-            // $result   = $this->addEmployeeToDevices($employee);
+            $result   = $this->addEmployeeToDevices($employee);
 
-            // if (! $result) {
-            //     throw new EmployeeCreationException('Failed to add employee to device');
-            // }
+            if (! $result) {
+                throw new EmployeeCreationException('Failed to add employee to device');
+            }
 
             return $employee;
         });
@@ -130,69 +132,131 @@ class EmployeeService implements EmployeeServiceInterface
         throw new EmployeeCreationException("Failed to create Employee after {$maxRetries} attempts.");
     }
 
-   public function updateEmployee( EmployeeBasicInfoStoreRequet $request,Employee $employee): Employee
-{
-    $maxRetries = Config::get('employee.max_retries', 1);
-    $retryDelay = Config::get('employee.initial_retry_delay_ms', 100);
+    public function updateEmployee(EmployeeBasicInfoStoreRequet $request, Employee $employee): Employee
+    {
+        $maxRetries = Config::get('employee.max_retries', 1);
+        $retryDelay = Config::get('employee.initial_retry_delay_ms', 100);
 
-    for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
 
-        $this->employeeStoreLog->info('Attempting Employee update', [
-            'attempt'      => $attempt,
-            'employee_id'  => $employee->id,
-        ]);
+            $this->employeeStoreLog->info('Attempting Employee update', [
+                'attempt'     => $attempt,
+                'employee_id' => $employee->id,
+            ]);
 
-        try {
-            $employeeData = $request->validated();
+            try {
+                $employeeData = $request->validated();
 
-            return DB::transaction(function () use ($employee, $employeeData, $attempt) {
-                $updatedEmployee = $this->employeeRepository->updateEmployee($employee, $employeeData);
+                return DB::transaction(function () use ($employee, $employeeData, $attempt) {
+                    $updatedEmployee = $this->employeeRepository->updateEmployee($employee, $employeeData);
 
-                $this->employeeStoreLog->info('Employee updated successfully', [
-                    'attempt'            => $attempt,
-                    'employee_id'        => $updatedEmployee->id,
-                    'employee_name'      => $updatedEmployee->first_name . ' ' . $updatedEmployee->last_name,
-                    'date_of_joining'    => $updatedEmployee->date_of_joining,
-                    'employment_type_id' => $updatedEmployee->employment_type_id,
-                    'department_id'      => $updatedEmployee->department_id,
-                    'designation_id'     => $updatedEmployee->designation_id,
-                ]);
+                    $this->employeeStoreLog->info('Employee updated successfully', [
+                        'attempt'            => $attempt,
+                        'employee_id'        => $updatedEmployee->id,
+                        'employee_name'      => $updatedEmployee->first_name . ' ' . $updatedEmployee->last_name,
+                        'date_of_joining'    => $updatedEmployee->date_of_joining,
+                        'employment_type_id' => $updatedEmployee->employment_type_id,
+                        'department_id'      => $updatedEmployee->department_id,
+                        'designation_id'     => $updatedEmployee->designation_id,
+                    ]);
 
-                return $updatedEmployee;
-            });
+                    return $updatedEmployee;
+                });
 
-        } catch (QueryException $e) {
-            if ($this->isDeadlockOrConnectionException($e)) {
-                $this->employeeStoreLog->warning('Transient DB issue during Employee update, retrying...', [
+            } catch (QueryException $e) {
+                if ($this->isDeadlockOrConnectionException($e)) {
+                    $this->employeeStoreLog->warning('Transient DB issue during Employee update, retrying...', [
+                        'attempt'       => $attempt,
+                        'employee_id'   => $employee->id,
+                        'error_message' => $e->getMessage(),
+                    ]);
+                    usleep($retryDelay * 1000);
+                    $retryDelay *= 2;
+                    continue;
+                }
+
+                $this->employeeStoreLog->error('Query exception during Employee update', [
                     'attempt'       => $attempt,
                     'employee_id'   => $employee->id,
                     'error_message' => $e->getMessage(),
                 ]);
-                usleep($retryDelay * 1000);
-                $retryDelay *= 2;
-                continue;
+
+                throw $e;
+            } catch (\Exception $e) {
+                $this->employeeStoreLog->error('Unexpected error during Employee update', [
+                    'attempt'       => $attempt,
+                    'employee_id'   => $employee->id,
+                    'error_message' => $e->getMessage(),
+                ]);
+
+                throw $e;
             }
+        }
 
-            $this->employeeStoreLog->error('Query exception during Employee update', [
-                'attempt'       => $attempt,
-                'employee_id'   => $employee->id,
-                'error_message' => $e->getMessage(),
-            ]);
+        throw new EmployeeCreationException("Failed to update Employee after {$maxRetries} attempts.");
+    }
 
-            throw $e;
+    public function deleteEmployee(Employee $employee)
+    {
+        try {
+            return DB::transaction(function () use ($employee) {
+
+                // 1. Remove from all devices if UID exists
+                if (! empty($employee->employee_device_uid)) {
+                    $devices = Device::all(); // Get all devices
+
+
+
+                    foreach ($devices as $device) {
+                        $zk        = new ZKTeco($device->ip_address);
+                        $connected = $zk->connect();
+
+                        if ($connected) {
+                            $removedUser = $zk->removeUser($employee->employee_device_uid);
+
+                            $this->employeeStoreLog->info('Removed employee from device', [
+                                'employee_id'         => $employee->id,
+                                'employee_name'       => $employee->first_name . ' ' . $employee->last_name,
+                                'device_id'           => $device->id,
+                                'device_ip'           => $device->ip_address,
+                                'removed_from_device' => $removedUser,
+                            ]);
+                        } else {
+                            $this->employeeStoreLog->warning('Could not connect to device to remove employee', [
+                                'employee_id' => $employee->id,
+                                'device_id'   => $device->id,
+                                'device_ip'   => $device->ip_address,
+                            ]);
+                        }
+                    }
+                }
+
+                // 2. Soft delete employee
+                $employee->delete();
+
+                // 3. Clear cache
+                Redis::del('all_employees');
+
+                // 4. Log soft deletion
+                $this->employeeStoreLog->info('Employee record soft-deleted', [
+                    'id'            => $employee->id,
+                    'employee_name' => $employee->first_name . ' ' . $employee->last_name,
+                    'deleted_at'    => now(),
+                ]);
+
+                return true;
+            });
         } catch (\Exception $e) {
-            $this->employeeStoreLog->error('Unexpected error during Employee update', [
-                'attempt'       => $attempt,
-                'employee_id'   => $employee->id,
+            $this->employeeStoreLog->error('Error during Employee deletion', [
+                'id'            => $employee->id,
+                'employee_name' => $employee->first_name . ' ' . $employee->last_name,
                 'error_message' => $e->getMessage(),
+                'trace'         => $e->getTraceAsString(),
             ]);
 
             throw $e;
         }
     }
-
-    throw new EmployeeCreationException("Failed to update Employee after {$maxRetries} attempts.");
-}
 
     public function addEmployeeToDevices(Employee $employee): bool
     {
@@ -291,7 +355,7 @@ class EmployeeService implements EmployeeServiceInterface
                 return false;
             }
 
-            $this->employeeRepository->updateEmployeeIdOnDevice($employee, $userid);
+            $this->employeeRepository->updateEmployeeIdOnDevice($employee, $userid,$uid);
 
             return true;
         } catch (\Exception $e) {
@@ -302,7 +366,6 @@ class EmployeeService implements EmployeeServiceInterface
             return false;
         }
     }
-
 
     public function addEmployeePersonalInfo(Employee $employee, array $personalData): Employee
     {

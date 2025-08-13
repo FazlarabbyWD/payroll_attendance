@@ -44,10 +44,11 @@ class EmployeeManageController extends Controller
     }
     public function index()
     {
-        $stats           = $this->employeeService->getEmployeeStats();
-        $departments     = $this->departmentsService->getAllDepartments();
-        $bloodGroups     = $this->departmentsService->getBloodGroup();
-        $employees       = $this->employeeService->getAllEmployees();
+        $stats       = $this->employeeService->getEmployeeStats();
+        $departments = $this->departmentsService->getAllDepartments();
+        $bloodGroups = $this->departmentsService->getBloodGroup();
+        $employees   = $this->employeeService->getAllEmployees();
+
         $employmentTypes = $this->employeeService->getAllEmploymentTypes();
 
         // dd($employees);
@@ -121,50 +122,81 @@ class EmployeeManageController extends Controller
         }
     }
 
-
     public function update(EmployeeBasicInfoStoreRequet $request, Employee $employee)
-{
-    $employeeName = $request->input('first_name') . ' ' . $request->input('last_name');
-    $this->employeeStoreLog->info('Received Employee update request', [
-        'employee_id'   => $employee->id,
-        'employee_name' => $employeeName
-    ]);
-
-    try {
-        // ✅ Corrected argument order
-        $updatedEmployee = $this->employeeService->updateEmployee($request, $employee);
-
-        $this->employeeStoreLog->info('Employee updated successfully', [
-            'employee_id'   => $updatedEmployee->id,
-            'employee_name' => $updatedEmployee->first_name . ' ' . $updatedEmployee->last_name,
-        ]);
-
-        return redirect()->route('employees.index')
-            ->with('success', 'Employee updated successfully!');
-
-    } catch (ValidationException $e) {
-        $this->employeeStoreLog->error('Validation error during Employee update', [
+    {
+        $employeeName = $request->input('first_name') . ' ' . $request->input('last_name');
+        $this->employeeStoreLog->info('Received Employee update request', [
             'employee_id'   => $employee->id,
             'employee_name' => $employeeName,
-            'errors'        => $e->errors(),
         ]);
 
-        return redirect()->route('employees.edit', $employee->id)
-            ->withInput()
-            ->withErrors($e->errors());
+        try {
+            // ✅ Corrected argument order
+            $updatedEmployee = $this->employeeService->updateEmployee($request, $employee);
 
-    } catch (Exception $e) {
-        $this->employeeStoreLog->error('Failed to update Employee', [
-            'employee_id'   => $employee->id,
-            'employee_name' => $employeeName,
-            'error_message' => $e->getMessage(),
-        ]);
+            $this->employeeStoreLog->info('Employee updated successfully', [
+                'employee_id'   => $updatedEmployee->id,
+                'employee_name' => $updatedEmployee->first_name . ' ' . $updatedEmployee->last_name,
+            ]);
 
-        return redirect()->route('employees.edit', $employee->id)
-            ->withInput()
-            ->with('error', 'Employee update failed. Please try again.');
+            return redirect()->route('employees.index')
+                ->with('success', 'Employee updated successfully!');
+
+        } catch (ValidationException $e) {
+            $this->employeeStoreLog->error('Validation error during Employee update', [
+                'employee_id'   => $employee->id,
+                'employee_name' => $employeeName,
+                'errors'        => $e->errors(),
+            ]);
+
+            return redirect()->route('employees.edit', $employee->id)
+                ->withInput()
+                ->withErrors($e->errors());
+
+        } catch (Exception $e) {
+            $this->employeeStoreLog->error('Failed to update Employee', [
+                'employee_id'   => $employee->id,
+                'employee_name' => $employeeName,
+                'error_message' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('employees.edit', $employee->id)
+                ->withInput()
+                ->with('error', 'Employee update failed. Please try again.');
+        }
     }
-}
+
+    public function destroy(Employee $employee)
+    {
+        $employeeName = $employee->first_name . ' ' . $employee->last_name;
+        $this->employeeStoreLog->info('Received Employee deletion request', [
+            'employee_id'   => $employee->id,
+            'employee_name' => $employeeName,
+        ]);
+
+        try {
+
+            $this->employeeService->deleteEmployee($employee);
+
+            $this->employeeStoreLog->info('Employee deleted successfully', [
+                'employee_id'   => $employee->id,
+                'employee_name' => $employeeName,
+            ]);
+
+            return redirect()->route('employees.index')
+                ->with('success', 'Employee deleted and removed from devices successfully!');
+
+        } catch (Exception $e) {
+            $this->employeeStoreLog->error('Failed to delete Employee', [
+                'employee_id'   => $employee->id,
+                'employee_name' => $employeeName,
+                'error_message' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('employees.index')
+                ->with('error', 'Employee deletion failed. Please try again.');
+        }
+    }
 
     public function showPersonalInfoForm(Employee $employee)
     {

@@ -27,6 +27,7 @@ class Employee extends Model
         'blood_group_id',
         'national_id',
         'passport_number',
+        'employee_device_uid',
         'created_by',
         'updated_by',
         'deleted_by',
@@ -43,7 +44,6 @@ class Employee extends Model
         return $this->belongsTo(EmploymentStatus::class);
     }
 
-    /* Relationships */
     public function department()
     {
         return $this->belongsTo(Department::class);

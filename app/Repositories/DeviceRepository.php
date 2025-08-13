@@ -113,7 +113,7 @@ class DeviceRepository implements DeviceRepositoryInterface
      * @return int Number of synced users
      * @throws \Exception
      */
- public function syncEmployees(Device $device, string $type = 'employee'): int
+public function syncEmployees(Device $device, string $type = 'employee'): int
 {
     $deviceIp = $device->ip_address;
 
@@ -128,18 +128,20 @@ class DeviceRepository implements DeviceRepositoryInterface
     $count = 0;
 
     foreach ($users as $user) {
-        if (empty($user['userid']) || empty($user['name'])) {
+        if (empty($user['userid']) || empty($user['name']) || empty($user['uid'])) {
             continue;
         }
 
         Employee::updateOrCreate(
             ['employee_id' => $user['userid']],
-            ['first_name' => $user['name']]
+            [
+                'first_name' => $user['name'],
+                'employee_device_uid' => $user['uid']
+            ]
         );
 
         $count++;
     }
-
 
     DeviceSyncLog::create([
         'device_id' => $device->id,
@@ -154,6 +156,7 @@ class DeviceRepository implements DeviceRepositoryInterface
 
     return $count;
 }
+
 
 
 }

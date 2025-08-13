@@ -2,11 +2,11 @@
 namespace App\Repositories;
 
 use App\Models\Employee;
-use App\Models\EmploymentType;
 use App\Models\EmployeeAddress;
+use App\Models\EmploymentType;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
 
 class EmployeeRepository implements EmployeeRepositoryInterface
@@ -18,15 +18,10 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         $this->employeeStoreLog = Log::channel('employeeStoreLog');
     }
 
-    // public function getAllEmployees()
-    // {
-    //     return Cache::remember('all_employees', 300, function () {
-    //         return Employee::orderBy('created_at', 'desc')->paginate(200);
-    //     });
-    // }
-
     public function getAllEmployees()
     {
+
+        // Redis::del('all_employees');
 
         $cacheKey = 'all_employees';
 
@@ -35,7 +30,8 @@ class EmployeeRepository implements EmployeeRepositoryInterface
             return unserialize($cached);
         }
 
-        $employees = Employee::orderBy('created_at', 'desc')->paginate(200);
+        $employees = Employee::with('department', 'designation', 'employmentStatus', 'bloodGroup')->orderBy('employee_id', 'asc')->paginate(200);
+
         Redis::setex($cacheKey, 300, serialize($employees));
 
         return $employees;
@@ -43,14 +39,9 @@ class EmployeeRepository implements EmployeeRepositoryInterface
 
     public function getEmployeeStats()
     {
-        // return Employee::selectRaw("
-        //     COUNT(*) as total,
-        //     SUM(CASE WHEN phone_no IS NOT NULL AND national_id IS NOT NULL THEN 1 ELSE 0 END) as verified,
-        //     SUM(CASE WHEN phone_no IS NULL AND national_id IS NULL THEN 1 ELSE 0 END) as pending
-        // ")->first();
-        $cacheKey  = 'employee_stats';
-        $cacheTime = 60 * 60; // 1 hour (adjust as needed)
 
+        $cacheKey  = 'employee_stats';
+        $cacheTime = 60 * 60;
         return Cache::remember($cacheKey, $cacheTime, function () {
             return Employee::selectRaw("
             COUNT(*) as total,
@@ -84,6 +75,7 @@ class EmployeeRepository implements EmployeeRepositoryInterface
                 $employee->created_by         = auth()->id();
 
                 $employee->save();
+                Redis::del('all_employees');
 
                 $this->employeeStoreLog->info('Employee record inserted into DB', [
                     'id'                 => $employee->id,
@@ -118,6 +110,7 @@ class EmployeeRepository implements EmployeeRepositoryInterface
                 $employee->updated_by         = auth()->id();
 
                 $employee->save();
+                Redis::del('all_employees');
 
                 $this->employeeStoreLog->info('Employee record updated in DB', [
                     'id'                 => $employee->id,
@@ -140,12 +133,14 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         }
     }
 
-    public function updateEmployeeIdOnDevice($employee, $userid)
+    public function updateEmployeeIdOnDevice($employee, $userid,$uid)
     {
         try {
 
             $employee->employee_id = $userid;
+            $employee->employee_device_uid=$uid;
             $employee->save();
+            Redis::del('all_employees');
 
             $this->employeeStoreLog->info('Employee record updated in DB', [
                 'employee_id'          => $employee->id,
@@ -173,6 +168,7 @@ class EmployeeRepository implements EmployeeRepositoryInterface
             $employee->blood_group_id    = $personalData['blood_group_id'];
             $employee->national_id       = $personalData['national_id'];
             $employee->save();
+            Redis::del('all_employees');
 
             $this->employeeStoreLog->info('Employee personal info saved', [
                 'employee_id' => $employee->id,
@@ -215,5 +211,33 @@ class EmployeeRepository implements EmployeeRepositoryInterface
             throw $e;
         }
     }
+
+public function deleteEmployee(Employee $employee)
+{
+    try {
+        return DB::transaction(function () use ($employee) {
+
+            $employee->delete();
+            Redis::del('all_employees');
+
+            $this->employeeStoreLog->info('Employee record soft-deleted', [
+                'id'            => $employee->id,
+                'employee_name' => $employee->first_name . ' ' . $employee->last_name,
+                'deleted_at'    => now(),
+            ]);
+
+            return true;
+        });
+    } catch (\Exception $e) {
+        $this->employeeStoreLog->error('Error during Employee deletion', [
+            'id'            => $employee->id,
+            'employee_name' => $employee->first_name . ' ' . $employee->last_name,
+            'error_message' => $e->getMessage(),
+            'trace'         => $e->getTraceAsString(),
+        ]);
+
+        throw $e;
+    }
+}
 
 }

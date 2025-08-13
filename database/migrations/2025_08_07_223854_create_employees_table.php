@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
-            $table->string('employee_id')->unique();
+            $table->integer('employee_id')->unique();
             $table->string('first_name');
             $table->string('last_name')->nullable();
             $table->string('email')->unique()->nullable();
@@ -34,6 +34,7 @@ return new class extends Migration
 
             $table->string('national_id')->nullable()->unique();
             $table->string('passport_number')->nullable()->unique();
+            $table->integer('employee_device_uid')->nullable()->unique();
 
             $table->timestamps();
             $table->softDeletes();

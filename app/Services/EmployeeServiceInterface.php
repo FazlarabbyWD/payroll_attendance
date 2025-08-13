@@ -22,4 +22,7 @@ interface EmployeeServiceInterface
 
     public function addEmployeeAddress(Employee $employee, array $addressData): Employee;
 
+    public function deleteEmployee(Employee $employee);
+
+
 }

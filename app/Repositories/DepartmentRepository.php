@@ -6,6 +6,7 @@ use App\Models\Department;
 use App\Models\Gender;
 use App\Models\MaritalStatus;
 use App\Models\Religion;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -23,11 +24,12 @@ class DepartmentRepository implements DepartmentRepositoryInterface
         return Department::all();
     }
 
-     public function countDepartments()
+    public function countDepartments()
     {
-        return Department::count();
+        return Cache::remember('departments_count', 60, function () {
+            return Department::count();
+        });
     }
-
     public function getGender()
     {
         return Gender::all();

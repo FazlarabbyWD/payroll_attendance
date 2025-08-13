@@ -5,8 +5,7 @@
         <div class="d-flex justify-content-start align-items-center user-name">
             <div class="avatar-wrapper">
                 <div class="avatar avatar-sm me-4">
-                    <img src="{{ asset('/resources/assets/img/avatars/2.png') }}"
-                        alt="Avatar" class="rounded-circle">
+                    <img src="{{ asset('/resources/assets/img/avatars/2.png') }}" alt="Avatar" class="rounded-circle">
                 </div>
             </div>
             <div class="d-flex flex-column">
@@ -33,21 +32,28 @@
 
     <td>
         <div class="d-flex align-items-center">
-            <a href="javascript:;"
-                class="btn btn-icon btn-text-secondary rounded-pill delete-record">
+            <!-- Delete Button -->
+            <a href="javascript:;" class="btn btn-icon btn-text-secondary rounded-pill delete-record"
+                onclick="event.preventDefault(); if(confirm('Are you sure you want to delete this employee?')) { document.getElementById('delete-employee-{{ $employee->id }}').submit(); }">
                 <i class="icon-base ri ri-delete-bin-7-line icon-md"></i>
             </a>
-            <a href="app-user-view-account.html"
-                class="btn btn-icon btn-text-secondary rounded-pill">
+
+            <!-- Hidden Form for Delete -->
+            <form id="delete-employee-{{ $employee->id }}" action="{{ route('employees.destroy', $employee->id) }}"
+                method="POST" style="display: none;">
+                @csrf
+                @method('DELETE')
+            </form>
+
+            <a href="app-user-view-account.html" class="btn btn-icon btn-text-secondary rounded-pill">
                 <i class="icon-base ri ri-eye-line icon-md"></i>
             </a>
-            <a href="javascript:;"
-                class="btn btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow"
+            <a href="javascript:;" class="btn btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow"
                 data-bs-toggle="dropdown">
                 <i class="icon-base ri ri-more-2-line icon-md"></i>
             </a>
             <div class="dropdown-menu dropdown-menu-end m-0">
-              <a href="{{ route('employees.personal-info',$employee) }}" class="dropdown-item">Update Info</a>
+                <a href="{{ route('employees.personal-info',$employee) }}" class="dropdown-item">Update Info</a>
 
                 <a href="{{ route('employees.edit', $employee) }}" class="dropdown-item">Edit</a>
             </div>

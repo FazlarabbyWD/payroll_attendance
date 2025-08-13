@@ -1,23 +1,25 @@
 <?php
 namespace App\Http\Controllers\Employee;
 
-use Exception;
-use App\Models\Employee;
-use Illuminate\Http\Request;
-use App\Http\Requests\DesgnByDept;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use App\Services\EmployeeEducationService;
-use App\Services\EmployeeServiceInterface;
-use App\Services\DepartmentServiceInterface;
 use App\Exceptions\EmployeeNotFoundException;
-use App\Services\DesignationServiceInterface;
-use Illuminate\Validation\ValidationException;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\DesgnByDept;
 use App\Http\Requests\EmployeeAddressStoreRequest;
+use App\Http\Requests\EmployeeBankStoreRequest;
 use App\Http\Requests\EmployeeBasicInfoStoreRequet;
 use App\Http\Requests\EmployeeEducationStoreRequest;
 use App\Http\Requests\EmployeePersonalInfoStoreRequest;
+use App\Models\Employee;
+use App\Services\BankServiceInterface;
+use App\Services\DepartmentServiceInterface;
+use App\Services\DesignationServiceInterface;
+use App\Services\EmployeeBankService;
+use App\Services\EmployeeEducationService;
+use App\Services\EmployeeServiceInterface;
+use Exception;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class EmployeeManageController extends Controller
 {
@@ -25,15 +27,19 @@ class EmployeeManageController extends Controller
     protected $departmentsService;
     protected $employeeService;
     protected $employeeStoreLog;
-    protected  $educationService;
+    protected $educationService;
+    protected $bankService;
+    protected $employeeBankService;
 
-    public function __construct(DesignationServiceInterface $designationService, DepartmentServiceInterface $departmentsService, EmployeeServiceInterface $employeeService,EmployeeEducationService $educationService)
+    public function __construct(DesignationServiceInterface $designationService, DepartmentServiceInterface $departmentsService, EmployeeServiceInterface $employeeService, EmployeeEducationService $educationService, BankServiceInterface $bankService, EmployeeBankService $employeeBankService)
     {
-        $this->designationService = $designationService;
-        $this->departmentsService = $departmentsService;
-        $this->employeeService    = $employeeService;
-         $this->educationService = $educationService;
-        $this->employeeStoreLog   = Log::channel('employeeStoreLog');
+        $this->designationService  = $designationService;
+        $this->departmentsService  = $departmentsService;
+        $this->employeeService     = $employeeService;
+        $this->educationService    = $educationService;
+        $this->bankService         = $bankService;
+        $this->employeeBankService = $employeeBankService;
+        $this->employeeStoreLog    = Log::channel('employeeStoreLog');
 
     }
     public function index()
@@ -43,6 +49,8 @@ class EmployeeManageController extends Controller
         $bloodGroups     = $this->departmentsService->getBloodGroup();
         $employees       = $this->employeeService->getAllEmployees();
         $employmentTypes = $this->employeeService->getAllEmploymentTypes();
+
+        // dd($employees);
 
         return view('employees.index', compact('stats', 'departments', 'bloodGroups', 'employees', 'employmentTypes'));
     }
@@ -112,6 +120,51 @@ class EmployeeManageController extends Controller
             ]);
         }
     }
+
+
+    public function update(EmployeeBasicInfoStoreRequet $request, Employee $employee)
+{
+    $employeeName = $request->input('first_name') . ' ' . $request->input('last_name');
+    $this->employeeStoreLog->info('Received Employee update request', [
+        'employee_id'   => $employee->id,
+        'employee_name' => $employeeName
+    ]);
+
+    try {
+        // ✅ Corrected argument order
+        $updatedEmployee = $this->employeeService->updateEmployee($request, $employee);
+
+        $this->employeeStoreLog->info('Employee updated successfully', [
+            'employee_id'   => $updatedEmployee->id,
+            'employee_name' => $updatedEmployee->first_name . ' ' . $updatedEmployee->last_name,
+        ]);
+
+        return redirect()->route('employees.index')
+            ->with('success', 'Employee updated successfully!');
+
+    } catch (ValidationException $e) {
+        $this->employeeStoreLog->error('Validation error during Employee update', [
+            'employee_id'   => $employee->id,
+            'employee_name' => $employeeName,
+            'errors'        => $e->errors(),
+        ]);
+
+        return redirect()->route('employees.edit', $employee->id)
+            ->withInput()
+            ->withErrors($e->errors());
+
+    } catch (Exception $e) {
+        $this->employeeStoreLog->error('Failed to update Employee', [
+            'employee_id'   => $employee->id,
+            'employee_name' => $employeeName,
+            'error_message' => $e->getMessage(),
+        ]);
+
+        return redirect()->route('employees.edit', $employee->id)
+            ->withInput()
+            ->with('error', 'Employee update failed. Please try again.');
+    }
+}
 
     public function showPersonalInfoForm(Employee $employee)
     {
@@ -183,11 +236,11 @@ class EmployeeManageController extends Controller
         }
     }
 
-    public function getEducation(Employee $employee){
+    public function getEducation(Employee $employee)
+    {
 
-        return view('employees.education_info',compact('employee'));
+        return view('employees.education_info', compact('employee'));
     }
-
 
     public function storeEducation(EmployeeEducationStoreRequest $request, Employee $employee)
     {
@@ -207,6 +260,36 @@ class EmployeeManageController extends Controller
             \Log::error('Error updating employee education: ' . $e->getMessage(), ['exception' => $e]);
             return redirect()->back()->with('error', 'Failed to update employee education. Please try again.')->withInput();
         }
+    }
+
+    public function getBank(Employee $employee)
+    {
+        $banks = $this->bankService->getBanks()->load('branches');
+        $employee->load(['bankDetails.branch.bank']);
+        return view('employees.bank_info', compact('employee', 'banks'));
+    }
+
+    public function storeBank(EmployeeBankStoreRequest $request, Employee $employee)
+    {
+        try {
+            $empBankData                = $request->validated();
+            $empBankData['employee_id'] = $employee->id;
+
+            $this->employeeBankService->storeEmployeeBank($empBankData);
+
+            return redirect()->back()->with('success', 'Employee bank details saved successfully.');
+
+        } catch (Exception $e) {
+
+            $this->employeeStoreLog->error('Error saving address information', [
+                'employee_id' => $employee->id,
+                'error'       => $e->getMessage(),
+                'trace'       => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->back()->with('error', 'Failed to save address information. Please try again.');
+        }
+
     }
 
 }

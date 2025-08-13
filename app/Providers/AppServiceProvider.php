@@ -1,29 +1,33 @@
 <?php
 namespace App\Providers;
 
-use App\Repositories\DepartmentRepository;
-use App\Repositories\DepartmentRepositoryInterface;
-use App\Repositories\DesignationRepository;
-use App\Repositories\DesignationRepositoryInterface;
-use App\Repositories\DeviceRepository;
-use App\Repositories\DeviceRepositoryInterface;
-use App\Repositories\EmployeeEducationRepository;
-use App\Repositories\EmployeeEducationRepositoryInterface;
-use App\Repositories\EmployeeRepository;
-use App\Repositories\EmployeeRepositoryInterface;
-use App\Repositories\UserRepository;
-use App\Repositories\UserRepositoryInterface;
-use App\Services\DepartmentService;
-use App\Services\DepartmentServiceInterface;
-use App\Services\DesignationService;
-use App\Services\DesignationServiceInterface;
-use App\Services\DeviceService;
-use App\Services\DeviceServiceInterface;
-use App\Services\EmployeeService;
-use App\Services\EmployeeServiceInterface;
+use App\Services\BankService;
 use App\Services\UserService;
+use App\Services\DeviceService;
+use App\Services\EmployeeService;
+use App\Services\DepartmentService;
+use App\Repositories\BankRepository;
+use App\Repositories\UserRepository;
+use App\Services\DesignationService;
+use App\Repositories\DeviceRepository;
+use App\Services\BankServiceInterface;
 use App\Services\UserServiceInterface;
 use Illuminate\Support\ServiceProvider;
+use App\Repositories\EmployeeRepository;
+use App\Services\DeviceServiceInterface;
+use App\Repositories\DepartmentRepository;
+use App\Services\EmployeeServiceInterface;
+use App\Repositories\DesignationRepository;
+use App\Services\DepartmentServiceInterface;
+use App\Repositories\BankRepositoryInterface;
+use App\Repositories\UserRepositoryInterface;
+use App\Services\DesignationServiceInterface;
+use App\Repositories\DeviceRepositoryInterface;
+use App\Repositories\EmployeeEducationRepository;
+use App\Repositories\EmployeeRepositoryInterface;
+use App\Repositories\DepartmentRepositoryInterface;
+use App\Repositories\DesignationRepositoryInterface;
+use App\Repositories\EmployeeEducationRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -46,8 +50,13 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(EmployeeRepositoryInterface::class, EmployeeRepository::class);
         $this->app->bind(EmployeeServiceInterface::class, EmployeeService::class);
-        $this->app->bind(EmployeeEducationRepositoryInterface::class,EmployeeEducationRepository::class
+
+        $this->app->bind(EmployeeEducationRepositoryInterface::class, EmployeeEducationRepository::class
         );
+
+        $this->app->bind(BankRepositoryInterface::class, BankRepository::class);
+        $this->app->bind(BankServiceInterface::class, BankService::class);
+        
 
     }
 

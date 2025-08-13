@@ -7,11 +7,11 @@ use App\Models\Device;
 
 interface DeviceServiceInterface
 {
-     public function getAllDevices(); 
+    public function getAllDevices();
     public function createDevice(DeviceStoreRequest $request): Device;
     public function findDevice(string $id): ?Device;
     public function updateDevice(DeviceUpdateRequest $request, string $id): Device;
 
     public function deleteDevice(string $id): void;
+    public function syncEmployees(Device $device);
 }
-

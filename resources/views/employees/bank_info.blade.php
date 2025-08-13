@@ -1,5 +1,3 @@
-{{-- @dd($current); --}}
-
 @extends('app')
 @section('main-content')
 <div class="container-xxl flex-grow-1 container-p-y">
@@ -82,21 +80,23 @@
                     </div>
                 </div>
 
+
                 <div class="col-md-8">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                         <!-- Left: Navigation Pills -->
                         <ul class="nav nav-pills flex-row">
 
                             <li class="nav-item">
-                                <a class="nav-link waves-effect waves-light"
-                                    href="{{ route('employees.personal-info',$employee) }}">
-                                    <i class="icon-base ri ri-bookmark-line icon-sm me-1_5"></i>Personal Info
+                                <a class="nav-link  waves-effect waves-light" href="javascript:void(0);">
+                                    <i class="icon-base ri ri-link-m icon-sm me-1_5"></i>Personal Info
                                 </a>
                             </li>
 
+
                             <li class="nav-item">
-                                <a class="nav-link active waves-effect waves-light" href="javascript:void(0);">
-                                    <i class="icon-base ri ri-link-m icon-sm me-1_5"></i>Address
+                                <a class="nav-link waves-effect waves-light"
+                                    href="{{ route('employees.address',$employee) }}">
+                                    <i class="icon-base ri ri-bookmark-line icon-sm me-1_5"></i>Address
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -105,9 +105,9 @@
                                     <i class="menu-icon icon-base ri ri-bill-line"></i>Education
                                 </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link waves-effect waves-light"
-                                    href="{{ route('employees.bankinfo',$employee) }}">
+                                <a class="nav-link active waves-effect waves-light" href="javascript::void()">
                                     <i class="icon-base ri ri-money-dollar-circle-line icon-24px"></i>Bank Info
                                 </a>
                             </li>
@@ -118,26 +118,56 @@
                                 <span class="d-none d-sm-inline-block">Employee List</span>
                             </a>
                         </div>
+
                     </div>
                     <div class="card mb-6">
                         <div class="card-body pt-0">
-                            <form id="formAddressInfo" method="POST"
-                                action="{{ route('employees.address.store', $employee) }}">
+                            <form id="formBankInfo" method="POST"
+                                action="{{ route('employees.bankinfo.store',$employee) }}">
                                 @csrf
+
                                 <div class="row mt-1 g-5">
 
                                     <div class="col-md-6 form-control-validation">
                                         <div class="form-floating form-floating-outline">
-                                            <select id="type" name="type"
-                                                class="select2 form-select @error('type') is-invalid @enderror">
-                                                <option value="current" {{ old('type')=='current' ? 'selected' : '' }}>
-                                                    Current</option>
-                                                <option value="permanent" {{ old('type')=='permanent' ? 'selected' : ''
-                                                    }}>Permanent</option>
+                                            <select id="bank_id" name="bank_id"
+                                                class="select2 form-select @error('bank_id') is-invalid @enderror">
+                                                <option value="">Select Bank</option>
+                                                @foreach($banks as $bank)
+                                                <option value="{{ $bank->id }}" {{ old('bank_id', optional($employee->
+                                                    bankDetails?->branch?->bank)->id) == $bank->id ? 'selected' : '' }}>
+                                                    {{ $bank->name }}
+                                                </option>
+
+                                                @endforeach
+                                            </select>
+                                            <label for="bank_id">Bank <span>*</span></label>
+                                            @error('bank_id')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-md-6 form-control-validation">
+                                        <div class="form-floating form-floating-outline">
+                                            <select id="bank_branch_id" name="bank_branch_id"
+                                                class="select2 form-select @error('bank_branch_id') is-invalid @enderror">
+                                                <option value="">Select Branch</option>
+                                                @foreach($banks as $bank)
+                                                @foreach($bank->branches as $branch)
+                                                <option value="{{ $branch->id }}" {{ old('bank_branch_id',
+                                                    optional($employee->bankDetails)->bank_branch_id) == $branch->id ?
+                                                    'selected' : '' }}>
+                                                    {{ $branch->branch_name }}
+                                                </option>
+
+                                                @endforeach
+                                                @endforeach
                                             </select>
 
-                                            <label for="type">Address Type <span>*</span></label>
-                                            @error('type')
+                                            <label for="branch_id">Branch <span>*</span></label>
+                                            @error('branch_id')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
@@ -145,24 +175,12 @@
 
                                     <div class="col-md-6 form-control-validation">
                                         <div class="form-floating form-floating-outline">
-                                            <input class="form-control @error('country') is-invalid @enderror"
-                                                type="text" id="country" name="country"
-                                                value="{{ old('country', request('type') == 'permanent' ? ($permanent->country ?? '') : ($current->country ?? '')) }}">
-
-                                            <label for="country">Country <span>*</span></label>
-                                            @error('country')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-
-
-                                    <div class="col-md-6 form-control-validation">
-                                        <div class="form-floating form-floating-outline">
-                                            <input class="form-control @error('state') is-invalid @enderror" type="text"
-                                                id="state" name="state">
-                                            <label for="state">State <span>*</span></label>
-                                            @error('state')
+                                            <input type="text" id="account_holder_name" name="account_holder_name"
+                                                class="form-control @error('account_holder_name') is-invalid @enderror"
+                                                placeholder="Enter account holder name"
+                                                value="{{ old('account_holder_name', optional($employee->bankDetails)->account_holder_name) }}">
+                                            <label for="account_holder_name">A/C Name <span>*</span></label>
+                                            @error('account_holder_name')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
@@ -170,49 +188,31 @@
 
                                     <div class="col-md-6 form-control-validation">
                                         <div class="form-floating form-floating-outline">
-                                            <input class="form-control @error('city') is-invalid @enderror" type="text"
-                                                id="city" name="city">
-                                            <label for="city">City <span>*</span></label>
-                                            @error('city')
+                                            <input type="text" id="account_number" name="account_number"
+                                                class="form-control @error('account_number') is-invalid @enderror"
+                                                placeholder="Enter account number"
+                                                value="{{ old('account_number', optional($employee->bankDetails)->account_number) }}">
+                                            <label for="account_number">A/C Number <span>*</span></label>
+                                            @error('account_number')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6 form-control-validation">
-                                        <div class="form-floating form-floating-outline">
-                                            <input class="form-control @error('postal_code') is-invalid @enderror"
-                                                type="text" id="postal_code" name="postal_code">
-                                            <label for="postal_code">Postal Code <span>*</span></label>
-                                            @error('postal_code')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-12 form-control-validation">
-                                        <div class="form-floating form-floating-outline">
-                                            <textarea class="form-control @error('address') is-invalid @enderror"
-                                                id="address" name="address" rows="3"></textarea>
-                                            <label for="address">Address <span>*</span></label>
-                                            @error('address')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <div class="mt-6">
-                                    @if($current?->country || $permanent?->country)
+
+                                    @if(!is_null($employee->bankDetails?->bank_branch_id))
                                     <button type="submit" class="btn btn-primary me-3 waves-effect waves-light">
-                                        Update Address
+                                        Update Info
                                     </button>
                                     @else
                                     <button type="submit" class="btn btn-primary me-3 waves-effect waves-light">
-                                        Save Address
+                                        Save Info
                                     </button>
                                     @endif
-                                </div>
 
+
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -222,28 +222,3 @@
     </div>
 </div>
 @endsection
-
-@push('scripts')
-
-<script>
-    const addresses = {
-        current: @json($current),
-        permanent: @json($permanent)
-    };
-
-    document.getElementById('type').addEventListener('change', function () {
-        let type = this.value;
-        let addr = addresses[type] || {};
-
-        document.getElementById('country').value     = addr.country     || '';
-        document.getElementById('state').value       = addr.state       || '';
-        document.getElementById('city').value        = addr.city        || '';
-        document.getElementById('postal_code').value = addr.postal_code || '';
-        document.getElementById('address').value     = addr.address     || '';
-    });
-
-    // Trigger once on page load
-    document.getElementById('type').dispatchEvent(new Event('change'));
-</script>
-
-@endpush

@@ -2,10 +2,12 @@
 namespace App\Repositories;
 
 use App\Models\Employee;
-use App\Models\EmployeeAddress;
 use App\Models\EmploymentType;
+use App\Models\EmployeeAddress;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 
 class EmployeeRepository implements EmployeeRepositoryInterface
 {
@@ -16,17 +18,46 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         $this->employeeStoreLog = Log::channel('employeeStoreLog');
     }
 
+    // public function getAllEmployees()
+    // {
+    //     return Cache::remember('all_employees', 300, function () {
+    //         return Employee::orderBy('created_at', 'desc')->paginate(200);
+    //     });
+    // }
+
     public function getAllEmployees()
     {
-        return Employee::orderBy('created_at','desc')->paginate(10);
+
+        $cacheKey = 'all_employees';
+
+        $cached = Redis::get($cacheKey);
+        if ($cached !== null) {
+            return unserialize($cached);
+        }
+
+        $employees = Employee::orderBy('created_at', 'desc')->paginate(200);
+        Redis::setex($cacheKey, 300, serialize($employees));
+
+        return $employees;
     }
+
     public function getEmployeeStats()
     {
-        return Employee::selectRaw("
+        // return Employee::selectRaw("
+        //     COUNT(*) as total,
+        //     SUM(CASE WHEN phone_no IS NOT NULL AND national_id IS NOT NULL THEN 1 ELSE 0 END) as verified,
+        //     SUM(CASE WHEN phone_no IS NULL AND national_id IS NULL THEN 1 ELSE 0 END) as pending
+        // ")->first();
+        $cacheKey  = 'employee_stats';
+        $cacheTime = 60 * 60; // 1 hour (adjust as needed)
+
+        return Cache::remember($cacheKey, $cacheTime, function () {
+            return Employee::selectRaw("
             COUNT(*) as total,
             SUM(CASE WHEN phone_no IS NOT NULL AND national_id IS NOT NULL THEN 1 ELSE 0 END) as verified,
             SUM(CASE WHEN phone_no IS NULL AND national_id IS NULL THEN 1 ELSE 0 END) as pending
         ")->first();
+        });
     }
 
     public function getAllEmploymentTypes()
@@ -67,6 +98,41 @@ class EmployeeRepository implements EmployeeRepositoryInterface
             });
         } catch (\Exception $e) {
             $this->employeeStoreLog->error('Error during Employee record insertion', [
+                'error_message' => $e->getMessage(),
+                'trace'         => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
+    }
+
+    public function updateEmployee($employee, array $data)
+    {
+        try {
+            return DB::transaction(function () use ($employee, $data) {
+                $employee->first_name         = $data['first_name'];
+                $employee->last_name          = $data['last_name'];
+                $employee->date_of_joining    = $data['date_of_joining'];
+                $employee->employment_type_id = $data['employment_type_id'];
+                $employee->department_id      = $data['department_id'];
+                $employee->designation_id     = $data['designation_id'];
+                $employee->updated_by         = auth()->id();
+
+                $employee->save();
+
+                $this->employeeStoreLog->info('Employee record updated in DB', [
+                    'id'                 => $employee->id,
+                    'employee_name'      => $employee->first_name . ' ' . $employee->last_name,
+                    'date_of_joining'    => $employee->date_of_joining,
+                    'employment_type_id' => $employee->employment_type_id,
+                    'department_id'      => $employee->department_id,
+                    'designation_id'     => $employee->designation_id,
+                ]);
+
+                return $employee;
+            });
+        } catch (\Exception $e) {
+            $this->employeeStoreLog->error('Error during Employee record update', [
+                'employee_id'   => $employee->id ?? null,
                 'error_message' => $e->getMessage(),
                 'trace'         => $e->getTraceAsString(),
             ]);

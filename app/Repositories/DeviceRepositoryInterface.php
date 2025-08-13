@@ -18,4 +18,6 @@ interface DeviceRepositoryInterface
 
     public function getAllActiveDeviceIps();
 
+     public function syncEmployees(Device $device): int;
+
 }

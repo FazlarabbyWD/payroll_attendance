@@ -3,6 +3,8 @@ namespace App\Repositories;
 
 use App\Models\Device;
 use App\Models\Employee;
+use App\Models\DeviceSyncLog;
+use Jmrashed\Zkteco\Lib\ZKTeco;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -103,5 +105,55 @@ class DeviceRepository implements DeviceRepositoryInterface
     {
         return Device::where('status', 1)->pluck('ip_address');
     }
+
+    /**
+     * Sync employees from device
+     *
+     * @param Device $device
+     * @return int Number of synced users
+     * @throws \Exception
+     */
+ public function syncEmployees(Device $device, string $type = 'employee'): int
+{
+    $deviceIp = $device->ip_address;
+
+    $zk = new ZKTeco($deviceIp);
+    $connected = $zk->connect();
+
+    if (!$connected) {
+        throw new \Exception("Could not connect to device {$device->device_name} ({$deviceIp})");
+    }
+
+    $users = $zk->getUser();
+    $count = 0;
+
+    foreach ($users as $user) {
+        if (empty($user['userid']) || empty($user['name'])) {
+            continue;
+        }
+
+        Employee::updateOrCreate(
+            ['employee_id' => $user['userid']],
+            ['first_name' => $user['name']]
+        );
+
+        $count++;
+    }
+
+
+    DeviceSyncLog::create([
+        'device_id' => $device->id,
+        'type'      => $type,
+        'last_sync' => now(),
+    ]);
+
+    $this->DeviceStoreLog->info("Synced {$count} {$type}s from device", [
+        'device_id' => $device->id,
+        'ip' => $device->ip_address
+    ]);
+
+    return $count;
+}
+
 
 }

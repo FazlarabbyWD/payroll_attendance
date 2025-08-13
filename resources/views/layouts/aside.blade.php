@@ -45,10 +45,10 @@
 
     <ul class="menu-inner py-1">
         <!-- Dashboards -->
-        <li class="menu-item ">
-            <a href="javascript:void(0);" class="menu-link">
+        <li class="menu-item {{ request()->is('dashboard*') ? 'active' : '' }} ">
+            <a href="{{ route('dashboard') }}" class="menu-link">
                 <i class="menu-icon icon-base ri ri-home-smile-line"></i>
-                <div data-i18n="Dashboards">Dashboards</div>
+                <div data-i18n="Dashboards">Dashboard</div>
             </a>
         </li>
 
@@ -85,6 +85,11 @@
                 <li class="menu-item {{ request()->routeIs('devices.index') ? 'active' : '' }}">
                     <a href="{{ route('devices.index') }}" class="menu-link">
                         <div data-i18n="Device">Device List</div>
+                    </a>
+                </li>
+                 <li class="menu-item {{ request()->routeIs('device.data.sync') ? 'active' : '' }}">
+                    <a href="{{ route('device.data.sync') }}" class="menu-link">
+                        <div data-i18n="Device">Device Data Sync</div>
                     </a>
                 </li>
             </ul>

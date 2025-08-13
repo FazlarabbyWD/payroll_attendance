@@ -25,6 +25,29 @@ class DeviceService implements DeviceServiceInterface
         $this->deviceCrudLog    = Log::channel('deviceStoreLog');
     }
 
+    public function syncEmployees(Device $device)
+    {
+        try {
+            $count = $this->deviceRepository->syncEmployees($device);
+
+            $this->deviceCrudLog->info("DeviceService: Synced {$count} employees", [
+                'device_id' => $device->id,
+                'device_ip' => $device->ip_address,
+            ]);
+
+            return $count;
+
+        } catch (\Exception $e) {
+            $this->deviceCrudLog->error("DeviceService: Failed to sync employees", [
+                'device_id' => $device->id,
+                'device_ip' => $device->ip_address,
+                'error'     => $e->getMessage(),
+            ]);
+
+            throw $e; // rethrow so controller can handle it
+        }
+    }
+
     public function getAllDevices()
     {
         return $this->deviceRepository->getAll();
@@ -166,4 +189,5 @@ class DeviceService implements DeviceServiceInterface
             'Connection refused',
         ]) || in_array($code, ['40001', '40P01']);
     }
+
 }

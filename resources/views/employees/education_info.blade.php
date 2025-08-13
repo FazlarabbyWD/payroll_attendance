@@ -100,14 +100,14 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link active waves-effect waves-light"
-                                    href="javascript:void()">
+                                    href="javascript::void()">
                                     <i class="menu-icon icon-base ri ri-bill-line"></i>Education
                                 </a>
                             </li>
 
                             <li class="nav-item">
                                 <a class="nav-link waves-effect waves-light"
-                                    href="pages-account-settings-notifications.html">
+                                    href="{{ route('employees.bankinfo',$employee) }}">
                                     <i class="icon-base ri ri-money-dollar-circle-line icon-24px"></i>Bank Info
                                 </a>
                             </li>

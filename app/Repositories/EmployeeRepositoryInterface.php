@@ -14,9 +14,10 @@ interface EmployeeRepositoryInterface
     public function updateEmployeeIdOnDevice($employee, $userid);
     public function addEmployeeAddress(Employee $employee, array $addressData);
     public function addEmployeePersonalInfo(Employee $employee, array $personalData);
+    public function updateEmployee($employee, array $data);
 
     //  public function findEmployeeById($id);
-    //   public function updateEmployee($id, array $data);
+
     //    public function deleteEmployee($id);
 
 }

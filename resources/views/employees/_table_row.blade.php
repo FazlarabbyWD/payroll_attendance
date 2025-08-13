@@ -20,7 +20,7 @@
     <td>{{ $employee->department->name ?? 'N/A' }}</td>
 
     <td>{{ $employee->designation->name ?? 'N/A' }}</td>
-    <td>{{ $employee->employmentType->name ?? 'N/A' }}</td>
+    {{-- <td>{{ $employee->employmentType->name ?? 'N/A' }}</td> --}}
 
     <td>{{ $employee->phone_no ?? 'N/A' }}</td>
     <td>{{ $employee->bloodGroup->name ?? 'N/A' }}</td>

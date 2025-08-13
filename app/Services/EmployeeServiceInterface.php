@@ -13,6 +13,7 @@ interface EmployeeServiceInterface
     public function findEmployeeById($employee): ?Employee;
 
     public function createEmployee(EmployeeBasicInfoStoreRequet $request): Employee;
+    public function updateEmployee(EmployeeBasicInfoStoreRequet $request, Employee $employee): Employee;
     public function addEmployeeToDevices(Employee $employee): bool;
 
     public function createAndAddToDevice($request): Employee;

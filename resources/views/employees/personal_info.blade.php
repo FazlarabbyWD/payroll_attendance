@@ -17,9 +17,11 @@
                                         class="d-block rounded-circle img-fluid" height="100" width="100"
                                         id="uploadedAvatar" style="object-fit: cover;">
                                     <div class="user-info text-center">
-                                        <h5>{{ $employee->first_name }} {{ $employee->last_name }}</h5>
-                                        <span class="badge bg-label-danger rounded-pill"> {{
-                                            $employee->employmentType->name }}</span>
+                                        <h5>{{ $employee->first_name ?? 'N/A' }} {{ $employee->last_name ?? 'N/A' }}
+                                        </h5>
+                                        <span class="badge bg-label-danger rounded-pill">
+                                            {{ $employee->employmentType->name ?? 'N/A' }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -31,7 +33,8 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <h5 class="mb-0">{{ $employee->designation->name }}</h5>
+
+                                        <h5 class="mb-0">{{ $employee->designation->name ?? 'N/A' }}</h5>
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-4">
@@ -41,7 +44,7 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <h5 class="mb-0">{{ $employee->department->name }}</h5>
+                                        <h5 class="mb-0">{{ $employee->department->name ?? 'N/A' }}</h5>
                                     </div>
                                 </div>
                             </div>
@@ -50,7 +53,8 @@
                                 <ul class="list-unstyled mb-6">
                                     <li class="mb-2">
                                         <span class="h6">Joining Date:</span>
-                                        <span>{{ $employee->date_of_joining->format('d-m-Y') }}</span>
+                                        <span>{{ $employee->date_of_joining ?
+                                            $employee->date_of_joining->format('d-m-Y') : 'N/A' }}</span>
                                     </li>
 
                                     @php
@@ -65,8 +69,9 @@
                                     <li class="mb-2">
                                         <span class="h6">Status:</span>
 
-                                        <span class="{{$btnClass}}"> {{
-                                            $employee->employmentStatus->name }}</span>
+                                        <span class="{{ $btnClass }}">
+                                            {{ $employee->employmentStatus->name ?? 'N/A' }}
+                                        </span>
                                     </li>
                                 </ul>
                                 <div class="d-flex justify-content-center">
@@ -108,7 +113,7 @@
 
                             <li class="nav-item">
                                 <a class="nav-link waves-effect waves-light"
-                                    href="pages-account-settings-notifications.html">
+                                    href="{{ route('employees.bankinfo',$employee) }}">
                                     <i class="icon-base ri ri-money-dollar-circle-line icon-24px"></i>Bank Info
                                 </a>
                             </li>

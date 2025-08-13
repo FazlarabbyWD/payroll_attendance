@@ -130,6 +130,70 @@ class EmployeeService implements EmployeeServiceInterface
         throw new EmployeeCreationException("Failed to create Employee after {$maxRetries} attempts.");
     }
 
+   public function updateEmployee( EmployeeBasicInfoStoreRequet $request,Employee $employee): Employee
+{
+    $maxRetries = Config::get('employee.max_retries', 1);
+    $retryDelay = Config::get('employee.initial_retry_delay_ms', 100);
+
+    for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+
+        $this->employeeStoreLog->info('Attempting Employee update', [
+            'attempt'      => $attempt,
+            'employee_id'  => $employee->id,
+        ]);
+
+        try {
+            $employeeData = $request->validated();
+
+            return DB::transaction(function () use ($employee, $employeeData, $attempt) {
+                $updatedEmployee = $this->employeeRepository->updateEmployee($employee, $employeeData);
+
+                $this->employeeStoreLog->info('Employee updated successfully', [
+                    'attempt'            => $attempt,
+                    'employee_id'        => $updatedEmployee->id,
+                    'employee_name'      => $updatedEmployee->first_name . ' ' . $updatedEmployee->last_name,
+                    'date_of_joining'    => $updatedEmployee->date_of_joining,
+                    'employment_type_id' => $updatedEmployee->employment_type_id,
+                    'department_id'      => $updatedEmployee->department_id,
+                    'designation_id'     => $updatedEmployee->designation_id,
+                ]);
+
+                return $updatedEmployee;
+            });
+
+        } catch (QueryException $e) {
+            if ($this->isDeadlockOrConnectionException($e)) {
+                $this->employeeStoreLog->warning('Transient DB issue during Employee update, retrying...', [
+                    'attempt'       => $attempt,
+                    'employee_id'   => $employee->id,
+                    'error_message' => $e->getMessage(),
+                ]);
+                usleep($retryDelay * 1000);
+                $retryDelay *= 2;
+                continue;
+            }
+
+            $this->employeeStoreLog->error('Query exception during Employee update', [
+                'attempt'       => $attempt,
+                'employee_id'   => $employee->id,
+                'error_message' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        } catch (\Exception $e) {
+            $this->employeeStoreLog->error('Unexpected error during Employee update', [
+                'attempt'       => $attempt,
+                'employee_id'   => $employee->id,
+                'error_message' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+    }
+
+    throw new EmployeeCreationException("Failed to update Employee after {$maxRetries} attempts.");
+}
+
     public function addEmployeeToDevices(Employee $employee): bool
     {
         $this->employeeStoreLog->info('Attempting to add employee to Devices', [

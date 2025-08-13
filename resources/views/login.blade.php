@@ -11,7 +11,7 @@
     <meta name="description" content="" />
     <!-- Favicon -->
 
-    {{-- <link rel="icon" type="image/x-icon" href="{{ Vite::asset('favicon.ico') }}"> --}}
+    <link rel="icon" type="image/x-icon" href="{{ Vite::asset('favicon.ico') }}">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -77,31 +77,32 @@
                     <div class="card-body mt-1">
 
                         @if ($errors->any())
-                            <div class="alert alert-danger">
-                                <ul>
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
                         @endif
 
                         <form id="formAuthentication" class="mb-5" action="{{ route('login.submit') }}" method="POST">
                             @csrf
                             <div class="form-floating form-floating-outline mb-5 form-control-validation">
-                                <input type="text" class="form-control @error('email') is-invalid @enderror" id="email" name="email"
-                                    placeholder="Enter your email" autofocus value="{{ old('email') }}" />
+                                <input type="text" class="form-control @error('email') is-invalid @enderror" id="email"
+                                    name="email" placeholder="Enter your email" autofocus value="{{ old('email') }}" />
                                 <label for="email">Email</label>
                                 @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="mb-5">
                                 <div class="form-password-toggle form-control-validation">
                                     <div class="input-group input-group-merge">
                                         <div class="form-floating form-floating-outline">
-                                            <input type="password" id="password" class="form-control @error('password') is-invalid @enderror" name="password"
-                                                placeholder="············"
+                                            <input type="password" id="password"
+                                                class="form-control @error('password') is-invalid @enderror"
+                                                name="password" placeholder="············"
                                                 aria-describedby="password" />
                                             <label for="password">Password</label>
 
@@ -111,7 +112,7 @@
 
                                     </div>
                                     @error('password')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>

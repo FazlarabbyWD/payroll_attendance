@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\DepartmentDesignation\DepartmentManageController;
 use App\Http\Controllers\DepartmentDesignation\DesignationManageController;
+use App\Http\Controllers\Device\DeviceDataSyncController;
 use App\Http\Controllers\Device\DeviceManageController;
 use App\Http\Controllers\Employee\EmployeeManageController;
 use App\Http\Controllers\Test\TestController;
@@ -38,4 +39,14 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/employees/{employee}/education', [EmployeeManageController::class, 'getEducation'])->name('employees.education');
 
     Route::post('/employees/{employee}/education', [EmployeeManageController::class, 'storeEducation'])->name('employees.education.store');
+
+    Route::get('/employees/{employee}/bankinfo', [EmployeeManageController::class, 'getBank'])->name('employees.bankinfo');
+    Route::post('/employees/{employee}/bankinfo', [EmployeeManageController::class, 'storeBank'])->name('employees.bankinfo.store');
+
+    Route::get('/device/data/sync', [DeviceDataSyncController::class, 'index'])->name('device.data.sync');
+
+    Route::post('/devices/{device}/sync', [DeviceDataSyncController::class, 'sync'])->name('devices.sync');
+
+
+
 });

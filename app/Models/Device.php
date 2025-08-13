@@ -21,6 +21,10 @@ class Device extends Model
     ];
 
 
+      public function syncLogs()
+    {
+        return $this->hasMany(DeviceSyncLog::class, 'device_id');
+    }
 
     public function createdBy()
     {

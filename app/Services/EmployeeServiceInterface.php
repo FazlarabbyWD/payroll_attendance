@@ -24,5 +24,7 @@ interface EmployeeServiceInterface
 
     public function deleteEmployee(Employee $employee);
 
+    public function getCompanies();
+
 
 }

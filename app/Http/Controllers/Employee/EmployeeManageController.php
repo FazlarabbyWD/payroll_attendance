@@ -51,18 +51,18 @@ class EmployeeManageController extends Controller
 
         $employmentTypes = $this->employeeService->getAllEmploymentTypes();
 
-        // dd($employees);
-
         return view('employees.index', compact('stats', 'departments', 'bloodGroups', 'employees', 'employmentTypes'));
     }
 
     public function create()
     {
+        $companies= $this->employeeService->getCompanies();
         $designations  = $this->designationService->getAllDesignations();
         $departments   = $this->departmentsService->getAllDepartments();
         $employeeTypes = $this->employeeService->getAllEmploymentTypes();
 
-        return view('employees.create', compact('departments', 'designations', 'employeeTypes'));
+
+        return view('employees.create', compact('companies','departments', 'designations', 'employeeTypes'));
     }
 
     public function store(EmployeeBasicInfoStoreRequet $request)
@@ -99,11 +99,12 @@ class EmployeeManageController extends Controller
     public function edit(Employee $employee)
     {
         try {
+              $companies= $this->employeeService->getCompanies();
             $designations  = $this->designationService->getAllDesignations();
             $departments   = $this->departmentsService->getAllDepartments();
             $employeeTypes = $this->employeeService->getAllEmploymentTypes();
 
-            return view('employees.edit', compact('employee', 'designations', 'departments', 'employeeTypes'));
+            return view('employees.edit', compact('companies','employee', 'designations', 'departments', 'employeeTypes'));
 
         } catch (EmployeeNotFoundException $e) {
             return redirect()->route('employees.index')->withErrors([

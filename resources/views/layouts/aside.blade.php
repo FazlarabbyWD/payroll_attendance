@@ -59,7 +59,7 @@
         </li>
         <!-- Pages -->
 
-           <li class="menu-item {{ request()->is('employees*') ? 'open' : '' }}">
+        <li class="menu-item {{ request()->is('employees*') ? 'open' : '' }}">
             <a href="#" class="menu-link menu-toggle">
                 <i class="icon-base ri ri-group-line icon-sm me-1_5"></i>
                 <div data-i18n="Employee Settings">Employee Management</div>
@@ -75,8 +75,8 @@
 
 
 
+        <li class="menu-item {{ request()->is('devices*', 'devices/data-sync') ? 'open' : '' }}">
 
-        <li class="menu-item {{ request()->is('devices*') ? 'open' : '' }}">
             <a href="#" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ri ri-tv-2-line"></i>
                 <div data-i18n="Device Settings">Device Management</div>
@@ -87,8 +87,8 @@
                         <div data-i18n="Device">Device List</div>
                     </a>
                 </li>
-                 <li class="menu-item {{ request()->routeIs('device.data.sync') ? 'active' : '' }}">
-                    <a href="{{ route('device.data.sync') }}" class="menu-link">
+                <li class="menu-item {{ request()->routeIs('devices.data.sync') ? 'active' : '' }}">
+                    <a href="{{ route('devices.data.sync') }}" class="menu-link">
                         <div data-i18n="Device">Device Data Sync</div>
                     </a>
                 </li>
@@ -116,7 +116,7 @@
             </ul>
         </li>
 
-         <li class="menu-item {{ request()->is('users*') ? 'open' : '' }}">
+        <li class="menu-item {{ request()->is('users*') ? 'open' : '' }}">
             <a href="#" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ri ri-user-line"></i>
                 <div data-i18n="Account Settings">User Management</div>

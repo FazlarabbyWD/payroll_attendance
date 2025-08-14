@@ -12,8 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('employees', function (Blueprint $table) {
+            
             $table->id();
-            $table->integer('employee_id')->unique();
+            $table->integer('employee_device_uid')->nullable()->unique();
+            $table->integer('employee_id')->nullable()->unique();
             $table->string('first_name');
             $table->string('last_name')->nullable();
             $table->string('email')->unique()->nullable();
@@ -24,7 +26,6 @@ return new class extends Migration
 
             $table->foreignId('department_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('designation_id')->nullable()->constrained()->onDelete('set null');
-
             $table->foreignId('employment_status_id')->default(1)->constrained('employment_statuses');
             $table->foreignId('employment_type_id')->default(1)->constrained('employment_types');
             $table->foreignId('gender_id')->nullable()->constrained('genders');
@@ -34,7 +35,6 @@ return new class extends Migration
 
             $table->string('national_id')->nullable()->unique();
             $table->string('passport_number')->nullable()->unique();
-            $table->integer('employee_device_uid')->nullable()->unique();
 
             $table->timestamps();
             $table->softDeletes();

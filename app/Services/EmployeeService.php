@@ -37,6 +37,11 @@ class EmployeeService implements EmployeeServiceInterface
         return $this->employeeRepository->getAllEmploymentTypes();
     }
 
+      public function getCompanies()
+    {
+        return $this->employeeRepository->getCompanies();
+    }
+
     public function getAllEmployees()
     {
         return $this->employeeRepository->getAllEmployees();

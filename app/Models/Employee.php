@@ -39,6 +39,11 @@ class Employee extends Model
         'resigned_at'     => 'date',
     ];
 
+    public function companies()
+{
+    return $this->belongsToMany(Company::class, 'company_employee');
+}
+
     public function employmentStatus()
     {
         return $this->belongsTo(EmploymentStatus::class);

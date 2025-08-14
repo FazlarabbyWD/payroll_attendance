@@ -1,6 +1,7 @@
 <?php
 namespace App\Repositories;
 
+use App\Models\Company;
 use App\Models\Employee;
 use App\Models\EmployeeAddress;
 use App\Models\EmploymentType;
@@ -17,6 +18,10 @@ class EmployeeRepository implements EmployeeRepositoryInterface
     {
         $this->employeeStoreLog = Log::channel('employeeStoreLog');
     }
+
+      Public function getCompanies(){
+        return Company::all();
+      }
 
     public function getAllEmployees()
     {
@@ -61,6 +66,7 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         return Employee::find($employee);
     }
 
+
     public function createEmployee(array $data)
     {
         try {
@@ -75,6 +81,10 @@ class EmployeeRepository implements EmployeeRepositoryInterface
                 $employee->created_by         = auth()->id();
 
                 $employee->save();
+
+                if (! empty($data['company_ids'])) {
+                    $employee->companies()->sync($data['company_ids']);
+                }
                 Redis::del('all_employees');
 
                 $this->employeeStoreLog->info('Employee record inserted into DB', [
@@ -110,6 +120,9 @@ class EmployeeRepository implements EmployeeRepositoryInterface
                 $employee->updated_by         = auth()->id();
 
                 $employee->save();
+                if (! empty($data['company_ids'])) {
+                    $employee->companies()->sync($data['company_ids']);
+                }
                 Redis::del('all_employees');
 
                 $this->employeeStoreLog->info('Employee record updated in DB', [
@@ -133,12 +146,12 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         }
     }
 
-    public function updateEmployeeIdOnDevice($employee, $userid,$uid)
+    public function updateEmployeeIdOnDevice($employee, $userid, $uid)
     {
         try {
 
-            $employee->employee_id = $userid;
-            $employee->employee_device_uid=$uid;
+            $employee->employee_id         = $userid;
+            $employee->employee_device_uid = $uid;
             $employee->save();
             Redis::del('all_employees');
 
@@ -212,32 +225,32 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         }
     }
 
-public function deleteEmployee(Employee $employee)
-{
-    try {
-        return DB::transaction(function () use ($employee) {
+    public function deleteEmployee(Employee $employee)
+    {
+        try {
+            return DB::transaction(function () use ($employee) {
 
-            $employee->delete();
-            Redis::del('all_employees');
+                $employee->delete();
+                Redis::del('all_employees');
 
-            $this->employeeStoreLog->info('Employee record soft-deleted', [
+                $this->employeeStoreLog->info('Employee record soft-deleted', [
+                    'id'            => $employee->id,
+                    'employee_name' => $employee->first_name . ' ' . $employee->last_name,
+                    'deleted_at'    => now(),
+                ]);
+
+                return true;
+            });
+        } catch (\Exception $e) {
+            $this->employeeStoreLog->error('Error during Employee deletion', [
                 'id'            => $employee->id,
                 'employee_name' => $employee->first_name . ' ' . $employee->last_name,
-                'deleted_at'    => now(),
+                'error_message' => $e->getMessage(),
+                'trace'         => $e->getTraceAsString(),
             ]);
 
-            return true;
-        });
-    } catch (\Exception $e) {
-        $this->employeeStoreLog->error('Error during Employee deletion', [
-            'id'            => $employee->id,
-            'employee_name' => $employee->first_name . ' ' . $employee->last_name,
-            'error_message' => $e->getMessage(),
-            'trace'         => $e->getTraceAsString(),
-        ]);
-
-        throw $e;
+            throw $e;
+        }
     }
-}
 
 }

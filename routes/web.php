@@ -43,7 +43,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/employees/{employee}/bankinfo', [EmployeeManageController::class, 'getBank'])->name('employees.bankinfo');
     Route::post('/employees/{employee}/bankinfo', [EmployeeManageController::class, 'storeBank'])->name('employees.bankinfo.store');
 
-    Route::get('/device/data/sync', [DeviceDataSyncController::class, 'index'])->name('device.data.sync');
+    Route::get('/device/data/sync', [DeviceDataSyncController::class, 'index'])->name('devices.data.sync');
 
     Route::post('/devices/{device}/sync', [DeviceDataSyncController::class, 'sync'])->name('devices.sync');
 

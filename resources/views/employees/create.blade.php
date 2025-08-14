@@ -79,6 +79,9 @@
                                 </div>
                             </div>
 
+
+
+
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input type="date" id="date_of_joining" name="date_of_joining"
@@ -142,7 +145,28 @@
                                     @enderror
                                 </div>
                             </div>
+                              <div class="col-md-12">
+                                <label class="form-label d-block">Companies <span>*</span></label>
+                                <div class="form-control @error('company_ids') is-invalid @enderror"
+                                    style="height: auto; padding: 10px;">
+                                    @foreach($companies as $company)
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="company_ids[]"
+                                            value="{{ $company->id }}" id="company_{{ $company->id }}" {{
+                                            (collect(old('company_ids'))->contains($company->id)) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="company_{{ $company->id }}">
+                                            {{ $company->name }}
+                                        </label>
+                                    </div>
+                                    @endforeach
+                                </div>
+                                @error('company_ids')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+
                         </div>
+
                         <div class="mt-6">
                             <button type="submit" class="btn btn-primary me-3 waves-effect waves-light">Save
                                 & Next</button>

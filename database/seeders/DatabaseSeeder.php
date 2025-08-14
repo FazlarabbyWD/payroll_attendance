@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
             BloodGroupSeeder::class,
             ReligionSeeder::class,
             BankSeeder::class,
+            BankBranchSeeder::class,
+            CompanySeeder::class,
         ]);
     }
 }

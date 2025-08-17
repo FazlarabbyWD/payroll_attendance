@@ -65,11 +65,11 @@
                                         <button type="submit" class="btn btn-sm btn-primary">EMP SYNC</button>
                                     </form>
 
-                                    <form action="{{ route('devices.sync', [$device, 'type' => 'attendance']) }}"
+                                    {{-- <form action="{{ route('devices.sync', [$device, 'type' => 'attendance']) }}"
                                         method="POST">
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-secondary">ATT SYNC</button>
-                                    </form>
+                                    </form> --}}
                                 </td>
 
                             </tr>

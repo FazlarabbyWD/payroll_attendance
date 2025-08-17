@@ -52,6 +52,26 @@
             </a>
         </li>
 
+             <!-- Apps & Pages -->
+        <li class="menu-header mt-7">
+            <span class="menu-header-text">Attendances &amp; Logs</span>
+        </li>
+        <!-- Pages -->
+
+        <li class="menu-item {{ request()->is('attendance*') ? 'open' : '' }}">
+            <a href="#" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ri ri-map-2-line"></i>
+                <div data-i18n="Attendance Settings">Attendance Management</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('attendance.log') ? 'active' : '' }}">
+                    <a href="{{ route('attendance.log') }}" class="menu-link">
+                        <div data-i18n="Attendance">Attendance Sync Log</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
 
         <!-- Apps & Pages -->
         <li class="menu-header mt-7">

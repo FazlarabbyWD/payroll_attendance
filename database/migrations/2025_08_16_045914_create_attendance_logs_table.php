@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('device_sync_logs', function (Blueprint $table) {
+        Schema::create('attendance_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('device_id')->constrained()->onDelete('cascade');
-            $table->enum('type',['employee','attendance','attendance_process'])->nullable();
-            $table->timestamp('last_sync');
+            $table->foreignId('device_id')->constrained()->cascadeOnDelete();
+            $table->string('employee_id');
+            $table->dateTime('timestamp');
             $table->timestamps();
+
+            $table->index(['employee_id', 'timestamp']);
         });
     }
 
@@ -25,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('device_sync_logs');
+        Schema::dropIfExists('attendance_logs');
     }
 };

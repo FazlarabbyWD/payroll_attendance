@@ -39,10 +39,34 @@ class Employee extends Model
         'resigned_at'     => 'date',
     ];
 
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    public function shifts()
+    {
+        return $this->belongsToMany(Shift::class, 'employee_shift_assignments')
+            ->withPivot(['start_date', 'end_date'])
+            ->withTimestamps();
+    }
+
+    public function currentShift()
+    {
+        return $this->shifts()
+            ->wherePivot('start_date', '<=', today())
+            ->where(function ($q) {
+                $q->whereNull('end_date')
+                    ->orWhere('end_date', '>=', today());
+            })
+            ->latest('employee_shift_assignments.start_date')
+            ->first();
+    }
+
     public function companies()
-{
-    return $this->belongsToMany(Company::class, 'company_employee');
-}
+    {
+        return $this->belongsToMany(Company::class, 'company_employee');
+    }
 
     public function employmentStatus()
     {

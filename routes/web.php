@@ -1,17 +1,20 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthenticationController;
-use App\Http\Controllers\Dashboard\DashboardController;
-use App\Http\Controllers\DepartmentDesignation\DepartmentManageController;
-use App\Http\Controllers\DepartmentDesignation\DesignationManageController;
-use App\Http\Controllers\Device\DeviceDataSyncController;
-use App\Http\Controllers\Device\DeviceManageController;
-use App\Http\Controllers\Employee\EmployeeManageController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\Test\TestController;
 use App\Http\Controllers\User\UserController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\AuthenticationController;
+use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Device\DeviceManageController;
+use App\Http\Controllers\Device\DeviceDataSyncController;
+use App\Http\Controllers\Employee\EmployeeManageController;
+use App\Http\Controllers\Attendance\AttendanceLogController;
+use App\Http\Controllers\DepartmentDesignation\DepartmentManageController;
+use App\Http\Controllers\DepartmentDesignation\DesignationManageController;
 
 Route::get('/test', [TestController::class, 'index'])->name('test');
+Route::get('/sync', [TestController::class, 'syncAttendance'])->name('sync');
 
 Route::get('/', [AuthenticationController::class, 'loginForm'])->name('login');
 Route::post('/login', [AuthenticationController::class, 'loginSubmit'])->name('login.submit');
@@ -47,6 +50,16 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::post('/devices/{device}/sync', [DeviceDataSyncController::class, 'sync'])->name('devices.sync');
 
+    Route::get('/attendance.log', [AttendanceLogController::class, 'index'])->name('attendance.log');
 
+    Route::post('/attendance/sync', function () {
+        Artisan::call('app:sync-attendance');
+        return back()->with('success', 'Attendance Sync started!');
+    })->name('attendance.sync');
+
+    Route::post('/attendance/process', function () {
+        Artisan::call('app:process-attendance');
+        return back()->with('success', 'Attendance Processing started!');
+    })->name('attendance.process');
 
 });

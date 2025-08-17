@@ -4,10 +4,12 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\Test\TestController;
 use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\Leave\LeaveManageController;
 use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Device\DeviceManageController;
 use App\Http\Controllers\Device\DeviceDataSyncController;
+use App\Http\Controllers\Holiday\HolidayManageController;
 use App\Http\Controllers\Employee\EmployeeManageController;
 use App\Http\Controllers\Attendance\AttendanceLogController;
 use App\Http\Controllers\DepartmentDesignation\DepartmentManageController;
@@ -61,5 +63,8 @@ Route::group(['middleware' => ['auth']], function () {
         Artisan::call('app:process-attendance');
         return back()->with('success', 'Attendance Processing started!');
     })->name('attendance.process');
+
+    Route::resource('holidays',HolidayManageController::class);
+    Route::resource('leaves',LeaveManageController::class);
 
 });

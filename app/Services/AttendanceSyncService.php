@@ -19,23 +19,23 @@ class AttendanceSyncService
         }
     }
 
-    protected function syncDeviceAttendance(Device $device)
+     protected function syncDeviceAttendance(Device $device)
     {
-        Log::info("Attempting to sync device: {$device->ip_address} (ID: {$device->id})");
+        Log::channel('attSyncLog')->info("Attempting to sync device: {$device->ip_address} (ID: {$device->id})");
 
         try {
             $zk = new ZKTeco($device->ip_address, $device->port ?? 4370);
 
             if (! $zk->connect()) {
-                Log::warning("Failed to connect to device: {$device->ip_address}");
+                Log::channel('attSyncLog')->warning("Failed to connect to device: {$device->ip_address}");
                 return;
             }
 
             $attendanceLogs = collect($zk->getAttendance());
-            Log::info("Device {$device->id} ({$device->ip_address}) total logs fetched: " . count($attendanceLogs));
+            Log::channel('attSyncLog')->info("Device {$device->id} ({$device->ip_address}) total logs fetched: " . count($attendanceLogs));
 
             if ($attendanceLogs->isEmpty()) {
-                Log::info("No logs found for device {$device->id}");
+                Log::channel('attSyncLog')->info("No logs found for device {$device->id}");
                 $zk->disconnect();
                 return;
             }
@@ -45,16 +45,16 @@ class AttendanceSyncService
                 ['last_sync' => null]
             );
 
-            Log::info("Device {$device->id} last_sync: " . $syncLog->last_sync);
+            Log::channel('attSyncLog')->info("Device {$device->id} last_sync: " . $syncLog->last_sync);
 
             $newLogs = $attendanceLogs->filter(function ($log) use ($syncLog) {
                 return $syncLog->last_sync === null || $log['timestamp'] > $syncLog->last_sync;
             });
 
-            Log::info("Device {$device->id} new logs after last_sync: " . count($newLogs));
+            Log::channel('attSyncLog')->info("Device {$device->id} new logs after last_sync: " . count($newLogs));
 
             if ($newLogs->isEmpty()) {
-                Log::info("No new logs to insert for device {$device->id}");
+                Log::channel('attSyncLog')->info("No new logs to insert for device {$device->id}");
                 $zk->disconnect();
                 return;
             }
@@ -63,12 +63,12 @@ class AttendanceSyncService
 
             $latestLogTime = $newLogs->max('timestamp');
             $syncLog->update(['last_sync' => $latestLogTime]);
-            Log::info("Device {$device->id} last_sync updated to: " . $latestLogTime);
+            Log::channel('attSyncLog')->info("Device {$device->id} last_sync updated to: " . $latestLogTime);
 
             $zk->disconnect();
 
         } catch (\Exception $e) {
-            Log::error("Error syncing device {$device->ip_address}: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            Log::channel('attSyncLog')->error("Error syncing device {$device->ip_address}: " . $e->getMessage() . "\n" . $e->getTraceAsString());
         }
     }
 
@@ -91,6 +91,6 @@ class AttendanceSyncService
             }
         });
 
-        Log::info("Inserted " . count($logs) . " new attendance logs for device {$device->id}");
+        Log::channel('attSyncLog')->info("Inserted " . count($logs) . " new attendance logs for device {$device->id}");
     }
 }

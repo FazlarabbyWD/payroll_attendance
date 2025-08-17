@@ -52,20 +52,20 @@ return [
 
     'channels'     => [
 
-        'stack'        => [
+        'stack'               => [
             'driver'            => 'stack',
             'channels'          => explode(',', (string) env('LOG_STACK', 'single')),
             'ignore_exceptions' => false,
         ],
 
-        'single'       => [
+        'single'              => [
             'driver'               => 'single',
             'path'                 => storage_path('logs/laravel.log'),
             'level'                => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],
 
-        'daily'        => [
+        'daily'               => [
             'driver'               => 'daily',
             'path'                 => storage_path('logs/laravel.log'),
             'level'                => env('LOG_LEVEL', 'debug'),
@@ -73,7 +73,7 @@ return [
             'replace_placeholders' => true,
         ],
 
-        'slack'        => [
+        'slack'               => [
             'driver'               => 'slack',
             'url'                  => env('LOG_SLACK_WEBHOOK_URL'),
             'username'             => env('LOG_SLACK_USERNAME', 'Laravel Log'),
@@ -82,7 +82,7 @@ return [
             'replace_placeholders' => true,
         ],
 
-        'papertrail'   => [
+        'papertrail'          => [
             'driver'       => 'monolog',
             'level'        => env('LOG_LEVEL', 'debug'),
             'handler'      => env('LOG_PAPERTRAIL_HANDLER', SyslogUdpHandler::class),
@@ -94,7 +94,7 @@ return [
             'processors'   => [PsrLogMessageProcessor::class],
         ],
 
-        'stderr'       => [
+        'stderr'              => [
             'driver'       => 'monolog',
             'level'        => env('LOG_LEVEL', 'debug'),
             'handler'      => StreamHandler::class,
@@ -105,59 +105,73 @@ return [
             'processors'   => [PsrLogMessageProcessor::class],
         ],
 
-        'syslog'       => [
+        'syslog'              => [
             'driver'               => 'syslog',
             'level'                => env('LOG_LEVEL', 'debug'),
             'facility'             => env('LOG_SYSLOG_FACILITY', LOG_USER),
             'replace_placeholders' => true,
         ],
 
-        'errorlog'     => [
+        'errorlog'            => [
             'driver'               => 'errorlog',
             'level'                => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],
 
-        'null'         => [
+        'null'                => [
             'driver'  => 'monolog',
             'handler' => NullHandler::class,
         ],
 
-        'emergency'    => [
+        'emergency'           => [
             'path' => storage_path('logs/laravel.log'),
         ],
 
-        'userStoreLog' => [
+        'userStoreLog'        => [
             'driver' => 'daily',
             'path'   => storage_path('logs/user_store.log'),
             'level'  => env('LOG_LEVEL', 'debug'),
             'days'   => 14,
         ],
 
-        'deviceStoreLog' => [
+        'deviceStoreLog'      => [
             'driver' => 'daily',
             'path'   => storage_path('logs/device_store.log'),
             'level'  => env('LOG_LEVEL', 'debug'),
             'days'   => 14,
         ],
 
-         'departmentStoreLog' => [
+        'departmentStoreLog'  => [
             'driver' => 'daily',
             'path'   => storage_path('logs/department_store.log'),
             'level'  => env('LOG_LEVEL', 'debug'),
             'days'   => 14,
         ],
 
-         'designationStoreLog' => [
+        'designationStoreLog' => [
             'driver' => 'daily',
             'path'   => storage_path('logs/designation_store.log'),
             'level'  => env('LOG_LEVEL', 'debug'),
             'days'   => 14,
         ],
 
-         'employeeStoreLog' => [
+        'employeeStoreLog'    => [
             'driver' => 'daily',
             'path'   => storage_path('logs/employee_store.log'),
+            'level'  => env('LOG_LEVEL', 'debug'),
+            'days'   => 14,
+        ],
+
+        'attSyncLog'          => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/attendance_sync.log'),
+            'level'  => env('LOG_LEVEL', 'debug'),
+            'days'   => 14,
+        ],
+
+        'attProsLog'          => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/attendance_pros.log'),
             'level'  => env('LOG_LEVEL', 'debug'),
             'days'   => 14,
         ],

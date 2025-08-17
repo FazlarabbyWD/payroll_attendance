@@ -13,6 +13,145 @@ use App\Models\EmployeeShiftAssignment;
 
 class AttendanceProcessingService
 {
+
+       const ATTENDANCE_LOGS_TYPE = 'attendance_logs';
+
+
+    public function processAttendanceLogs()
+    {
+      Log::channel('attProsLog')->info("Starting attendance processing...");
+
+
+
+        $lastProcessed = AttendanceProcess::where('type', self::ATTENDANCE_LOGS_TYPE)->first();
+        $lastProcessedAt = $lastProcessed ? $lastProcessed->last_processed_at : null;
+
+        $query = AttendanceLog::query();
+
+        if ($lastProcessedAt) {
+            $query->where('timestamp', '>', $lastProcessedAt);
+        }
+
+        $attendanceLogs = $query->with('device')->orderBy('timestamp', 'asc')->get();
+
+        if ($attendanceLogs->isEmpty()) {
+            Log::channel('attProsLog')->info("No new attendance logs found to process.");
+            return;
+        }
+
+
+        $groupedLogs = $attendanceLogs->groupBy(function ($log) {
+            return $log->employee_id . '|' . Carbon::parse($log->timestamp)->toDateString();
+        });
+
+        Log::channel('attProsLog')->info("Processing " . count($groupedLogs) . " employee-day groups.");
+
+        DB::beginTransaction();
+
+        try {
+            $latestProcessedAt = $lastProcessedAt;
+
+            foreach ($groupedLogs as $key => $logs) {
+                list($employeeId, $dateString) = explode('|', $key);
+                $date = Carbon::parse($dateString);
+
+                $this->processEmployeeAttendance($employeeId, $date, $logs);
+
+                $latestLogTimestamp = $logs->max(fn($log) => $log->timestamp);
+                $latestProcessedAt = max($latestProcessedAt, $latestLogTimestamp);
+            }
+
+            AttendanceProcess::updateOrCreate(
+                ['type' => self::ATTENDANCE_LOGS_TYPE],
+                ['last_processed_at' => $latestProcessedAt]
+            );
+
+            DB::commit();
+            Log::channel('attProsLog')->info("Attendance processing completed successfully.");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::channel('attProsLog')->error("Error processing attendance: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            throw $e; // Re-throw to allow for error handling upstream
+        }
+    }
+
+    /**
+     * Processes attendance logs for a single employee on a specific date.
+     *
+     * @param string $employeeId
+     * @param Carbon $date
+     * @param \Illuminate\Support\Collection $logs  Collection of AttendanceLog models.
+     */
+    protected function processEmployeeAttendance(string $employeeId, Carbon $date, $logs)
+    {
+        try {
+            $employee = Employee::find($employeeId);
+            if (!$employee) {
+                Log::channel('attProsLog')->warning("Employee with ID {$employeeId} not found. Skipping.");
+                return;
+            }
+
+            $firstLog = $logs->sortBy('timestamp')->first();
+            $lastLog = $logs->sortByDesc('timestamp')->first();
+
+            $checkInTime = Carbon::parse($firstLog->timestamp);
+            $checkOutTime = Carbon::parse($lastLog->timestamp);
+
+            $attendance = Attendance::where('employee_id', $employee->id)->where('date', $date->toDateString())->first();
+
+            if ($attendance) {
+                Log::channel('attProsLog')->info("Attendance record already exists for employee {$employee->id} on {$date->toDateString()}.  Skipping.");
+                return;
+            }
+
+            $totalMinutes = $checkInTime->diffInMinutes($checkOutTime);
+            $scheduledStartTime = $date->copy()->setTime(10, 0, 0);
+            $scheduledEndTime = $date->copy()->setTime(18, 0, 0);
+            $scheduledWorkMinutes = 480;
+
+            $lateBy = null;
+            $earlyLeaveBy = null;
+            $overtimeMinutes = 0;
+            $status = 'Present';
+
+            if ($checkInTime->gt($scheduledStartTime)) {
+                $lateBy = $scheduledStartTime->diff($checkInTime)->format('%H:%I:%S');
+                $status = 'Late';
+            }
+
+            if ($checkOutTime->lt($scheduledEndTime)) {
+                $earlyLeaveBy = $checkOutTime->diff($scheduledEndTime)->format('%H:%I:%S');
+            }
+
+            if ($totalMinutes > $scheduledWorkMinutes) {
+                $overtimeMinutes = $totalMinutes - $scheduledWorkMinutes;
+            }
+
+
+            Attendance::create([
+                'employee_id' => $employee->id,
+                'date' => $date->toDateString(),
+                'check_in' => $checkInTime->toTimeString(),
+                'check_out' => $checkOutTime->toTimeString(),
+                'total_minutes' => $totalMinutes,
+                'late_by' => $lateBy,
+                'early_leave_by' => $earlyLeaveBy,
+                'overtime_minutes' => $overtimeMinutes,
+                'status' => $status,
+                'is_manual' => false,
+            ]);
+
+            Log::channel('attProsLog')->info("Attendance record created for employee {$employee->id} on {$date->toDateString()}");
+
+        } catch (\Exception $e) {
+            Log::channel('attProsLog')->error("Error processing attendance for employee {$employeeId} on {$date->toDateString()}: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            throw $e;
+        }
+    }
+}
+
+
     /**
      * Process logs into daily attendance
      *
@@ -103,154 +242,3 @@ class AttendanceProcessingService
     // }
 
 
-     const ATTENDANCE_LOGS_TYPE = 'attendance_logs';
-
-    /**
-     * Processes attendance logs to generate daily attendance records, skipping previously processed logs.
-     */
-    public function processAttendanceLogs()
-    {
-        Log::info("Starting attendance processing...");
-
-        // Get the last processed timestamp from the database
-        $lastProcessed = AttendanceProcess::where('type', self::ATTENDANCE_LOGS_TYPE)->first();
-        $lastProcessedAt = $lastProcessed ? $lastProcessed->last_processed_at : null;
-
-        $query = AttendanceLog::query();
-
-        if ($lastProcessedAt) {
-            $query->where('timestamp', '>', $lastProcessedAt);
-        }
-
-        //Eager load the device relation in advance to reduce query times
-        $attendanceLogs = $query->with('device')->orderBy('timestamp', 'asc')->get();
-
-        if ($attendanceLogs->isEmpty()) {
-            Log::info("No new attendance logs found to process.");
-            return;
-        }
-
-        // Group logs by employee and date for efficient processing
-        $groupedLogs = $attendanceLogs->groupBy(function ($log) {
-            return $log->employee_id . '|' . Carbon::parse($log->timestamp)->toDateString();
-        });
-
-        Log::info("Processing " . count($groupedLogs) . " employee-day groups.");
-
-        DB::beginTransaction();
-
-        try {
-            $latestProcessedAt = $lastProcessedAt;  // Initialize with the previous value
-
-            foreach ($groupedLogs as $key => $logs) {
-                list($employeeId, $dateString) = explode('|', $key);
-                $date = Carbon::parse($dateString);
-
-                $this->processEmployeeAttendance($employeeId, $date, $logs);
-
-                // Update the latest processed timestamp
-                $latestLogTimestamp = $logs->max(fn($log) => $log->timestamp); // Find max timestamp in the group
-                $latestProcessedAt = max($latestProcessedAt, $latestLogTimestamp);
-            }
-
-            // Update the last processed timestamp in the database
-            AttendanceProcess::updateOrCreate(
-                ['type' => self::ATTENDANCE_LOGS_TYPE],
-                ['last_processed_at' => $latestProcessedAt]
-            );
-
-            DB::commit();
-            Log::info("Attendance processing completed successfully.");
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error("Error processing attendance: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-            throw $e; // Re-throw to allow for error handling upstream
-        }
-    }
-
-    /**
-     * Processes attendance logs for a single employee on a specific date.
-     *
-     * @param string $employeeId
-     * @param Carbon $date
-     * @param \Illuminate\Support\Collection $logs  Collection of AttendanceLog models.
-     */
-    protected function processEmployeeAttendance(string $employeeId, Carbon $date, $logs)
-    {
-        try {
-            // Attempt to find the employee.  Crucial for foreign key integrity.
-            $employee = Employee::find($employeeId);
-            if (!$employee) {
-                Log::warning("Employee with ID {$employeeId} not found. Skipping.");
-                return;
-            }
-
-            $firstLog = $logs->sortBy('timestamp')->first();
-            $lastLog = $logs->sortByDesc('timestamp')->first();
-
-            $checkInTime = Carbon::parse($firstLog->timestamp);
-            $checkOutTime = Carbon::parse($lastLog->timestamp);
-
-            // Check if an attendance record already exists for this employee and date
-            $attendance = Attendance::where('employee_id', $employee->id)->where('date', $date->toDateString())->first();
-
-            if ($attendance) {
-                Log::info("Attendance record already exists for employee {$employee->id} on {$date->toDateString()}.  Skipping.");
-                return; // Skip if record already exists
-            }
-
-            $totalMinutes = $checkInTime->diffInMinutes($checkOutTime);
-            $scheduledStartTime = $date->copy()->setTime(10, 0, 0); // Example: 9:00 AM
-            $scheduledEndTime = $date->copy()->setTime(18, 0, 0); // Example: 5:00 PM (17:00)
-            $scheduledWorkMinutes = 480; // 8 hours
-
-            $lateBy = null;
-            $earlyLeaveBy = null;
-            $overtimeMinutes = 0;
-            $status = 'Present';
-
-            if ($checkInTime->gt($scheduledStartTime)) {
-                $lateBy = $scheduledStartTime->diff($checkInTime)->format('%H:%I:%S');
-                $status = 'Late';
-            }
-
-            if ($checkOutTime->lt($scheduledEndTime)) {
-                $earlyLeaveBy = $checkOutTime->diff($scheduledEndTime)->format('%H:%I:%S');
-            }
-
-            if ($totalMinutes > $scheduledWorkMinutes) {
-                $overtimeMinutes = $totalMinutes - $scheduledWorkMinutes;
-            }
-
-             // Determine absence.  Adjust thresholds as needed.
-             if ($totalMinutes < 60 && $lateBy == null && $earlyLeaveBy == null) {
-                $status = 'Absent';
-            }
-
-            Attendance::create([
-                'employee_id' => $employee->id,
-                'date' => $date->toDateString(),
-                'check_in' => $checkInTime->toTimeString(),
-                'check_out' => $checkOutTime->toTimeString(),
-                'total_minutes' => $totalMinutes,
-                'late_by' => $lateBy,
-                'early_leave_by' => $earlyLeaveBy,
-                'overtime_minutes' => $overtimeMinutes,
-                'status' => $status,
-                'is_manual' => false, // Assuming these are all from device logs
-            ]);
-
-            Log::info("Attendance record created for employee {$employee->id} on {$date->toDateString()}");
-
-        } catch (\Exception $e) {
-            Log::error("Error processing attendance for employee {$employeeId} on {$date->toDateString()}: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-            throw $e; //Re-throw so the parent try-catch block can handle the exception
-        }
-    }
-
-
-
-
-
-}

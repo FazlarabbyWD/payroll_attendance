@@ -72,6 +72,25 @@
             </ul>
         </li>
 
+         <li class="menu-header mt-7">
+            <span class="menu-header-text">Leave &amp; Holiday</span>
+        </li>
+        <!-- Pages -->
+
+        <li class="menu-item {{ request()->is('holiday*') ? 'open' : '' }}">
+            <a href="#" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ri ri-map-2-line"></i>
+                <div data-i18n="Holiday Settings">Leave & Holiday Management</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('holidays.index') ? 'active' : '' }}">
+                    <a href="{{ route('holidays.index') }}" class="menu-link">
+                        <div data-i18n="Holiday">Holiday Mange</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
 
         <!-- Apps & Pages -->
         <li class="menu-header mt-7">

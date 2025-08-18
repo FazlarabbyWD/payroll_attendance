@@ -52,7 +52,7 @@
             </a>
         </li>
 
-             <!-- Apps & Pages -->
+        <!-- Apps & Pages -->
         <li class="menu-header mt-7">
             <span class="menu-header-text">Attendances &amp; Logs</span>
         </li>
@@ -72,7 +72,7 @@
             </ul>
         </li>
 
-         <li class="menu-header mt-7">
+        <li class="menu-header mt-7">
             <span class="menu-header-text">Leave &amp; Holiday</span>
         </li>
         <!-- Pages -->
@@ -85,7 +85,12 @@
             <ul class="menu-sub">
                 <li class="menu-item {{ request()->routeIs('holidays.index') ? 'active' : '' }}">
                     <a href="{{ route('holidays.index') }}" class="menu-link">
-                        <div data-i18n="Holiday">Holiday Mange</div>
+                        <div data-i18n="Holiday">Holiday Manage</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('leaves.index') ? 'active' : '' }}">
+                    <a href="{{ route('leaves.index') }}" class="menu-link">
+                        <div data-i18n="Holiday">Leave Manage</div>
                     </a>
                 </li>
             </ul>

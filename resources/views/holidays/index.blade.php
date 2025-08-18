@@ -59,7 +59,7 @@
 
 </div>
 
-@include('holidays.partials.add_holiday_modal')
+{{-- @include('holidays.partials.add_holiday_modal') --}}
 
 
 

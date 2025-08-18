@@ -13,9 +13,9 @@
                 <!-- Left: Navigation Pills -->
                 <ul class="nav nav-pills flex-row">
                     <li class="nav-item">
-                        <a class="nav-link active waves-effect waves-light" href="javascript:void(0);">
+                        {{-- <a class="nav-link active waves-effect waves-light" href="javascript:void(0);">
                             <i class="icon-base ri ri-group-line icon-sm me-1_5"></i>Add Employee
-                        </a>
+                        </a> --}}
                     </li>
                 </ul>
 

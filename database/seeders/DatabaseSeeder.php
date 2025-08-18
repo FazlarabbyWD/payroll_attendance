@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             BankSeeder::class,
             BankBranchSeeder::class,
             CompanySeeder::class,
+            HolidaySeeder::class
         ]);
     }
 }

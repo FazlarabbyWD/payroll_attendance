@@ -24,6 +24,7 @@ class AttendanceProcess extends Model
     protected $fillable = [
         'type',
         'last_processed_at',
+        'last_attendance_log_id',
     ];
 
     /**

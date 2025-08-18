@@ -13,7 +13,7 @@
                     <!-- Left: Navigation Pills -->
                     <ul class="nav nav-pills flex-row">
                         <li class="nav-item">
-                           
+
                         </li>
                     </ul>
 
@@ -129,7 +129,7 @@
     </div>
 @endsection
 
-@push('scripts')
+{{-- @push('scripts')
     <script>
         const employees = @json($employees);
 
@@ -150,4 +150,30 @@
             }
         });
     </script>
+@endpush --}}
+
+@push('scripts')
+    <script>
+        const employees = @json($employees);
+
+        document.getElementById('employee_id').addEventListener('input', function() {
+            const employeeId = this.value;
+            const employeeNameInput = document.getElementById('employee_name');
+
+            if (employeeId) {
+                const employee = employees.find(emp => emp.employee_id == employeeId);
+
+                if (employee) {
+                    employeeNameInput.value = employee.last_name
+                        ? employee.first_name + ' ' + employee.last_name
+                        : employee.first_name;
+                } else {
+                    employeeNameInput.value = '';
+                }
+            } else {
+                employeeNameInput.value = '';
+            }
+        });
+    </script>
 @endpush
+

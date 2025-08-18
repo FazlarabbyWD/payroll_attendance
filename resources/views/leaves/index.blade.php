@@ -12,7 +12,7 @@
                 <a href="{{ route('leaves.create') }}" class="btn create-new btn-primary">
                     <span class="d-flex align-items-center">
                         <i class="icon-base ri ri-add-line icon-18px me-sm-1"></i>
-                        <span class="d-none d-sm-inline-block">Add New Employee Leave</span>
+                        <span class="d-none d-sm-inline-block">Add Employee Leave</span>
                     </span>
                 </a>
             </div>

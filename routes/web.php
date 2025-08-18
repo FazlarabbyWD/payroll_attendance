@@ -10,6 +10,7 @@ use App\Http\Controllers\Device\DeviceManageController;
 use App\Http\Controllers\Employee\EmployeeManageController;
 use App\Http\Controllers\Holiday\HolidayManageController;
 use App\Http\Controllers\Leave\LeaveManageController;
+use App\Http\Controllers\Report\DailyAttendanceReportController;
 use App\Http\Controllers\Test\TestController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Artisan;
@@ -67,5 +68,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('holidays', HolidayManageController::class);
     Route::resource('leaves', LeaveManageController::class)
         ->parameters(['leaves' => 'leave']);
+
+    Route::get('/report/daily-attendance/request', [DailyAttendanceReportController::class, 'requestReport'])->name('reports.daily-attendance.request');
+    Route::get('/report/daily-attendance/show', [DailyAttendanceReportController::class, 'showReport'])->name('reports.daily-attendance.show');
 
 });

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('attendance_processes', function (Blueprint $table) {
             $table->id();
             $table->string('type')->unique(); // e.g., 'attendance_logs'
-            $table->timestamp('last_processed_at')->nullable();
+            $table->unsignedBigInteger('last_processed_id')->nullable();
             $table->timestamps();
         });
     }

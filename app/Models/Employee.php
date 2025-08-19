@@ -41,7 +41,7 @@ class Employee extends Model
 
     public function attendances()
     {
-        return $this->hasMany(Attendance::class);
+        return $this->hasMany(Attendance::class, 'employee_id', 'employee_id');
     }
 
     public function shifts()

@@ -3,7 +3,10 @@ namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\Company;
+use App\Models\Employee;
 use App\Services\EmployeeServiceInterface;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class DailyAttendanceReportController extends Controller
@@ -23,7 +26,6 @@ class DailyAttendanceReportController extends Controller
 
     public function showReport(Request $request)
     {
-
         $request->validate([
             'report_date' => 'required|date',
             'company_id'  => 'required|integer',
@@ -33,34 +35,48 @@ class DailyAttendanceReportController extends Controller
             return back()->withErrors(['company_id' => 'The selected concern is invalid.']);
         }
 
-        $date      = $request->report_date;
+        $date      = Carbon::parse($request->report_date);
         $companyId = $request->company_id;
 
-        $attendances = Attendance::with('employee')
-            ->whereDate('date', $date)
-            ->get();
+        if ($companyId == 0) {
+            // All companies → all employees
+            $attendances = Attendance::with('employee')
+                ->whereDate('date', $date)
+                ->orderBy('employee_id', 'asc')
+                ->get();
 
-        dd($attendances);
+            $totalEmployee = Employee::count();
+        } else {
+            $employeeIds = Company::with('employees:id')
+                ->findOrFail($companyId)
+                ->employees
+                ->pluck('id');
 
-        // dd($date, $companyId);
+            $actualIds = Employee::findMany($employeeIds)->pluck('employee_id');
 
-        // if ($companyId === 0) {
+            $attendances = Attendance::with('employee')
+                ->whereIn('employee_id', $actualIds)
+                ->whereDate('date', $date)
+                ->get();
 
-        //     $attendances = Attendance::with('employee')
-        //         ->whereDate('date', $date)
-        //         ->get();
-        // } else {
+            $totalEmployee = $actualIds->count();
+        }
 
-        //     $employeeIds = Company::with('employees:id')
-        //         ->findOrFail($companyId)
-        //         ->employees
-        //         ->pluck('id');
+        $totalMinutes      = $attendances->sum('total_minutes');
+        $totalWorkingHours = number_format($totalMinutes / 60, 2);
 
-        //     $attendances = Attendance::with('employee')
-        //         ->whereIn('employee_id', $employeeIds)
-        //         ->whereDate('date', $date)
-        //         ->get();
-        // }
+        $employeeCount       = $attendances->count();
+        $averageWorkingHours = $employeeCount > 0
+        ? number_format($totalWorkingHours / $employeeCount, 2)
+        : 0;
 
+        return view('reports.daily-report.show', compact(
+            'attendances',
+            'date',
+            'totalWorkingHours',
+            'averageWorkingHours',
+            'totalEmployee'
+        ));
     }
+
 }

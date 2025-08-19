@@ -1,15 +1,56 @@
 <?php
 namespace App\Http\Controllers\Test;
 
-use App\Http\Controllers\Controller;
-use App\Models\AttendanceLog;
 use App\Models\Device;
+use App\Models\AttendanceLog;
 use App\Models\DeviceSyncLog;
-use Illuminate\Support\Facades\Log;
 use Jmrashed\Zkteco\Lib\ZKTeco;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use App\Services\AttendanceProcessingService;
 
 class TestController extends Controller
 {
+
+
+    protected $attProsService;
+    public function __construct(AttendanceProcessingService $attProsService)
+    {
+        $this->attProsService = $attProsService;
+    }
+
+     public function index()
+    {
+
+        $checkAtt=$this->attProsService->processAttendanceLogs();
+
+        dd($checkAtt);
+
+        // $zk        = new ZKTeco('10.0.0.16');
+        // $connected = $zk->connect();
+        // if ($connected) {
+        //    $attendanceLog = $zk->getAttendance();
+        //     dd($attendanceLog);
+        // }
+
+        // $devices = Device::where('status', 1)->get();
+
+        // $results = [];
+
+        // foreach ($devices as $device) {
+        //     $zk = new ZKTeco($device->ip_address, $device->port ?? 4370);
+        //     $connected = $zk->connect();
+
+        //     $results[] = [
+        //         'device_name' => $device->device_name ?? $device->ip_address,
+        //         'ip' => $device->ip_address,
+        //         'port' => $device->port ?? 4370,
+        //         'connected' => $connected ? 'Yes' : 'No',
+        //     ];
+
+        //     $zk->disconnect();
+    }
+
 
     public function syncAttendance()
     {
@@ -184,31 +225,6 @@ class TestController extends Controller
     //     $zk->disconnect();
     // }
 
-    public function index()
-    {
-        // $zk        = new ZKTeco('10.0.0.16');
-        // $connected = $zk->connect();
-        // if ($connected) {
-        //    $attendanceLog = $zk->getAttendance();
-        //     dd($attendanceLog);
-        // }
 
-        // $devices = Device::where('status', 1)->get();
-
-        // $results = [];
-
-        // foreach ($devices as $device) {
-        //     $zk = new ZKTeco($device->ip_address, $device->port ?? 4370);
-        //     $connected = $zk->connect();
-
-        //     $results[] = [
-        //         'device_name' => $device->device_name ?? $device->ip_address,
-        //         'ip' => $device->ip_address,
-        //         'port' => $device->port ?? 4370,
-        //         'connected' => $connected ? 'Yes' : 'No',
-        //     ];
-
-        //     $zk->disconnect();
-    }
 
 }

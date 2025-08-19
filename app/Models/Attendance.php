@@ -40,7 +40,7 @@ class Attendance extends Model
     // Each attendance belongs to one employee
     public function employee()
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class,'employee_id','employee_id');
     }
 
     // Useful if you want to link back to raw logs of that day
